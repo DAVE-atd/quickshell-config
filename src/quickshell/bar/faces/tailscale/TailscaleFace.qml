@@ -1,5 +1,7 @@
-// Bar module "tailscale": VPN icon. Click opens the Tailscale popup (tailscale/TailscalePopup.qml).
+// Bar module "tailscale": VPN pill. Click opens the Tailscale popup (tailscale/TailscalePopup.qml),
+// right click switches Tailscale on/off without it.
 // Ported from DAVE-atd/Brain_Shell (src/modules/Right/Network.qml), AGPL-3.0 like Serpantinum.
+// Same pill as wifi/bt: accent while connected, surface0 when off.
 import QtQuick
 import Quickshell
 import "../../../reusables"
@@ -18,49 +20,41 @@ Item {
     readonly property var barWindow: module ? module.barWindow : null
     readonly property bool isPreview: module ? Boolean(module.isPreview) : false
 
-    function cs(val) { return barWindow ? barWindow.cs(val) : val }
+    function s(val) { return barWindow ? barWindow.cs(val) : val }
 
     readonly property var ts: TailscaleService
     readonly property bool on: isPreview || ts.running
 
-    property real lengthPadding: cs(isCompact ? 10 : 12)
-    implicitWidth: isVertical ? (parent ? parent.width : 0) : icon.implicitWidth + lengthPadding * 2
-    implicitHeight: isVertical ? icon.implicitHeight + lengthPadding * 2 : (parent ? parent.height : 0)
+    readonly property real pillSize: s(isCompact ? 28 : 30)
+    implicitWidth: isVertical ? (parent ? parent.width : 0) : pill.width + s(isCompact ? 8 : 10)
+    implicitHeight: isVertical ? pill.height + s(isCompact ? 8 : 10) : (parent ? parent.height : 0)
     visible: isPreview || ts.available
 
-    MouseArea {
-        id: area
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
-        onClicked: (ev) => {
-            if (root.isPreview) return
-            // Middle click: Tailscale on/off without the popup
-            if (ev.button === Qt.MiddleButton) { if (!root.ts.busy) root.ts.toggle(); return }
-            if (Caching.serpantinumDir)
-                Quickshell.execDetached(["bash", Caching.serpantinumDir + "/scripts/qs_manager.sh", "toggle", "tailscale"])
-        }
-    }
-
-    Text {
-        id: icon
+    ClickButton {
+        id: pill
         anchors.centerIn: parent
-        text: "󰖂"
-        font.family: ThemeBackend.iconFont
-        font.pixelSize: root.cs(root.isCompact ? 16 : 18)
-        // Blue while an exit node routes all traffic
-        color: !root.isPreview && root.ts.exitNode !== "" ? ThemeBackend.blue
-             : area.containsMouse ? ThemeBackend.blue
-             : ThemeBackend.text
-        opacity: root.on ? 1 : 0.45
-        Behavior on color { ColorAnimation { duration: 200 } }
-        Behavior on opacity { NumberAnimation { duration: 200 } }
+        height: root.pillSize
+        width: root.isVertical ? root.pillSize : implicitWidth
+        cornerRadius: Math.max(0, ThemeBackend.borderRadius - root.s(2))
+        horizontalPadding: root.isVertical ? 0 : root.s(root.isCompact ? 10 : 12)
+        // Globe while an exit node routes all traffic
+        buttonIcon: !root.isPreview && root.ts.exitNode !== "" ? "󰖟" : "󰖂"
+        iconFontSize: root.s(root.isCompact ? 14 : 15)
+        accentColor: root.on ? (root.isCompact ? Qt.lighter(ThemeBackend.mauve, 1.08) : ThemeBackend.mauve)
+                             : (root.isCompact ? Qt.lighter(ThemeBackend.surface0, 1.18) : ThemeBackend.surface0)
+        textColor: root.on ? ThemeBackend.base : ThemeBackend.text
+        Behavior on accentColor { ColorAnimation { duration: 200 } }
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-        SequentialAnimation on scale {
+        onClicked: if (!root.isPreview && Caching.serpantinumDir)
+            Quickshell.execDetached(["bash", Caching.serpantinumDir + "/scripts/qs_manager.sh", "toggle", "tailscale"])
+        onRightClicked: if (!root.isPreview && !root.ts.busy) root.ts.toggle()
+
+        // Pulse while tailscale up/down runs
+        SequentialAnimation on opacity {
             running: root.ts.busy; loops: Animation.Infinite
-            onRunningChanged: if (!running) icon.scale = 1
-            NumberAnimation { to: 1.15; duration: 600; easing.type: Easing.InOutSine }
+            onRunningChanged: if (!running) pill.opacity = 1
+            NumberAnimation { to: 0.55; duration: 600; easing.type: Easing.InOutSine }
             NumberAnimation { to: 1.0;  duration: 600; easing.type: Easing.InOutSine }
         }
     }

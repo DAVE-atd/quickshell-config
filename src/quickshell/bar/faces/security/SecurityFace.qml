@@ -1,5 +1,6 @@
-// Bar module "security": ClamAV shield. Click opens the security popup (security/SecurityPopup.qml).
+// Bar module "security": ClamAV shield pill. Click opens the security popup (security/SecurityPopup.qml).
 // Ported from DAVE-atd/Brain_Shell (src/modules/Right/Clamav.qml), AGPL-3.0 like Serpantinum.
+// Same pill as wifi/bt: accent when protection is on, red on a detection, surface0 when off.
 import QtQuick
 import Quickshell
 import "../../../reusables"
@@ -18,46 +19,46 @@ Item {
     readonly property var barWindow: module ? module.barWindow : null
     readonly property bool isPreview: module ? Boolean(module.isPreview) : false
 
-    function cs(val) { return barWindow ? barWindow.cs(val) : val }
+    function s(val) { return barWindow ? barWindow.cs(val) : val }
 
     readonly property var clam: ClamavService
+    readonly property bool on: isPreview || clam.enabled
     readonly property bool alert: !isPreview && (clam.unseen || clam.scanState === "infected")
 
-    property real lengthPadding: cs(isCompact ? 10 : 12)
-    implicitWidth: isVertical ? (parent ? parent.width : 0) : icon.implicitWidth + lengthPadding * 2
-    implicitHeight: isVertical ? icon.implicitHeight + lengthPadding * 2 : (parent ? parent.height : 0)
+    readonly property color accent: alert ? ThemeBackend.red
+                                  : on ? (isCompact ? Qt.lighter(ThemeBackend.mauve, 1.08) : ThemeBackend.mauve)
+                                  : (isCompact ? Qt.lighter(ThemeBackend.surface0, 1.18) : ThemeBackend.surface0)
+
+    readonly property real pillSize: s(isCompact ? 28 : 30)
+    implicitWidth: isVertical ? (parent ? parent.width : 0) : pill.width + s(isCompact ? 8 : 10)
+    implicitHeight: isVertical ? pill.height + s(isCompact ? 8 : 10) : (parent ? parent.height : 0)
     visible: isPreview || clam.available
 
-    MouseArea {
-        id: mouse
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: if (!root.isPreview && Caching.serpantinumDir)
-            Quickshell.execDetached(["bash", Caching.serpantinumDir + "/scripts/qs_manager.sh", "toggle", "security"])
-    }
-
-    Text {
-        id: icon
+    ClickButton {
+        id: pill
         anchors.centerIn: parent
-        text: root.isPreview ? "󰕥"
+        height: root.pillSize
+        width: root.isVertical ? root.pillSize : implicitWidth
+        cornerRadius: Math.max(0, ThemeBackend.borderRadius - root.s(2))
+        horizontalPadding: root.isVertical ? 0 : root.s(root.isCompact ? 10 : 12)
+        buttonIcon: root.isPreview ? "󰕥"
             : !root.clam.enabled ? "󰦞"      // shield-off
             : root.alert          ? "󰻌"      // shield-alert
             : root.clam.scanning  ? "󰶚"      // shield-search
             : "󰕥"                            // shield-check
-        font.family: ThemeBackend.iconFont
-        font.pixelSize: root.cs(root.isCompact ? 16 : 18)
-        color: root.alert ? ThemeBackend.red
-             : mouse.containsMouse ? ThemeBackend.blue
-             : ThemeBackend.text
-        opacity: root.isPreview || root.clam.enabled ? 1 : 0.55
-        Behavior on color { ColorAnimation { duration: 200 } }
+        iconFontSize: root.s(root.isCompact ? 14 : 15)
+        accentColor: root.accent
+        textColor: root.on || root.alert ? ThemeBackend.base : ThemeBackend.text
+        Behavior on accentColor { ColorAnimation { duration: 200 } }
+
+        onClicked: if (!root.isPreview && Caching.serpantinumDir)
+            Quickshell.execDetached(["bash", Caching.serpantinumDir + "/scripts/qs_manager.sh", "toggle", "security"])
 
         // Breathe while a system scan runs
-        SequentialAnimation on scale {
+        SequentialAnimation on opacity {
             running: root.clam.scanning; loops: Animation.Infinite
-            onRunningChanged: if (!running) icon.scale = 1
-            NumberAnimation { to: 1.15; duration: 700; easing.type: Easing.InOutSine }
+            onRunningChanged: if (!running) pill.opacity = 1
+            NumberAnimation { to: 0.55; duration: 700; easing.type: Easing.InOutSine }
             NumberAnimation { to: 1.0;  duration: 700; easing.type: Easing.InOutSine }
         }
     }
