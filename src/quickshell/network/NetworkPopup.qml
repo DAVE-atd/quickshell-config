@@ -1514,11 +1514,16 @@ Item {
         enabled: popupWindowRoot.visible
         opacity: popupWindowRoot.exitOpacity * popupWindowRoot.easeOut(popupWindowRoot.animWin(popupWindowRoot.introState, 0.0, 0.12))
         scale: (0.96 + 0.04 * popupWindowRoot.easeOut(popupWindowRoot.animWin(popupWindowRoot.introState, 0.0, 0.12))) * (0.97 + 0.03 * popupWindowRoot.exitOpacity)
-        transformOrigin: Item.Center
+        transformOrigin: ConvexState.origin
 
         Rectangle {
             anchors.fill: parent
             radius: ThemeBackend.borderRadius
+            // Convex bar style: square corners on sides attached to the bar or frame
+            topLeftRadius: ConvexState.tl(radius)
+            topRightRadius: ConvexState.tr(radius)
+            bottomLeftRadius: ConvexState.bl(radius)
+            bottomRightRadius: ConvexState.br(radius)
             color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
             clip: true
 

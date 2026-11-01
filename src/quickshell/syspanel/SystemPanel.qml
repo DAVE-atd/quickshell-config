@@ -405,10 +405,10 @@ Item {
         anchors.fill: parent
         color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
         radius: Math.min(ThemeBackend.borderRadius, root.s(28))
-        topLeftRadius: root.isLeftAnchored ? 0 : radius
-        bottomLeftRadius: root.isLeftAnchored ? 0 : radius
-        topRightRadius: root.isLeftAnchored ? radius : 0
-        bottomRightRadius: root.isLeftAnchored ? radius : 0
+        topLeftRadius: root.isLeftAnchored ? 0 : ConvexState.tl(radius)
+        bottomLeftRadius: root.isLeftAnchored ? 0 : ConvexState.bl(radius)
+        topRightRadius: root.isLeftAnchored ? ConvexState.tr(radius) : 0
+        bottomRightRadius: root.isLeftAnchored ? ConvexState.br(radius) : 0
         clip: true
         opacity: root.introContent
 

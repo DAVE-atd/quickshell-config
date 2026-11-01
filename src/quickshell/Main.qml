@@ -258,6 +258,56 @@ PanelWindow {
     }
 
     readonly property bool isBarEffectivelyHidden: barAutohide || isFullscreenActive
+
+    // Bar style "convex": dropdowns hang from the bar, side panels from the screen frame.
+    // Geometry goes to ConvexState (bar/ConvexBulges.qml draws the bar side, popups square their corners).
+    readonly property bool isConvex: rawBarSettings.style === "convex" && (barPosition === "top" || barPosition === "bottom") && !isBarEffectivelyHidden
+    readonly property var convexDropdowns: ["network", "tailscale", "security", "volume", "calendar", "music"]
+    readonly property int convexFrame: Math.round(Scaler.s(7))   // bar/Bar.qml convexFrame
+    readonly property int convexRadius: Math.round(Scaler.s(12)) // bar/Bar.qml cornerRadius
+    readonly property int convexBarH: {
+        let v = (rawBarSettings && rawBarSettings.height !== undefined) ? Number(rawBarSettings.height) : 40;
+        if (isNaN(v)) v = 40;
+        return Math.round(Scaler.s(Math.max(28, Math.min(48, v))));
+    }
+    function isConvexAttached(name) {
+        return isConvex && (convexDropdowns.indexOf(name) !== -1 || name === "notifications" || name === "system");
+    }
+    function convexLayout(name, r, mw, mh) {
+        let t = convexFrame, bh = convexBarH, top = barPosition === "top";
+        let out = { w: r.w, h: r.h, rx: r.rx, ry: r.ry, comp: r.comp, draggable: r.draggable };
+        if (name === "notifications" || name === "system") {
+            out.h = mh - bh - t;
+            out.ry = top ? bh : t;
+            out.rx = (name === "notifications") ? t : (mw - t - r.w);
+        } else {
+            out.ry = top ? bh : (mh - bh - r.h);
+            out.rx = Math.max(t, Math.min(mw - t - r.w, r.rx));
+        }
+        return out;
+    }
+
+    readonly property var convexInfo: {
+        if (!isConvexAttached(currentActive) || !screenReady) return null;
+        let t = convexFrame, bh = convexBarH, top = barPosition === "top", e = 0.5;
+        let x = _animX, y = _animY, w = _animW, h = _animH;
+        return {
+            x: x, y: y, w: w, h: h,
+            top: y <= (top ? bh : t) + e,
+            bottom: y + h >= masterWindow.height - (top ? t : bh) - e,
+            left: x <= t + e,
+            right: x + w >= masterWindow.width - t - e
+        };
+    }
+    onConvexInfoChanged: {
+        let c = convexInfo;
+        ConvexState.active = !!c;
+        if (!c) return;
+        ConvexState.screenName = masterWindow.screen ? (masterWindow.screen.name || "") : "";
+        ConvexState.x = c.x; ConvexState.y = c.y; ConvexState.w = c.w; ConvexState.h = c.h;
+        ConvexState.squareTop = c.top; ConvexState.squareBottom = c.bottom;
+        ConvexState.squareLeft = c.left; ConvexState.squareRight = c.right;
+    }
     readonly property bool screenReady: masterWindow.width >= 100 && masterWindow.height >= 100
     readonly property bool isCurrentDraggable: {
         let t = getLayout(masterWindow.currentActive);
@@ -270,6 +320,47 @@ PanelWindow {
         y: masterWindow._animY
         width: masterWindow._animW
         height: masterWindow._animH
+    }
+
+    // Convex: concave joins where the popup meets the screen frame (the bar side is drawn by the bar)
+    Repeater {
+        model: {
+            let c = masterWindow.convexInfo;
+            if (!c) return [];
+            let t = masterWindow.convexFrame, r = masterWindow.convexRadius;
+            let W = masterWindow.width, H = masterWindow.height;
+            let barTop = masterWindow.barPosition === "top";
+            let x0 = c.x, x1 = c.x + c.w, y0 = c.y, y1 = c.y + c.h;
+            let out = [];
+            // cornerIndex = filled corner: 0 TL, 1 TR, 2 BL, 3 BR
+            if (c.left) {
+                if (!c.bottom) out.push({ x: t, y: y1, c: 0 });
+                if (!c.top) out.push({ x: t, y: y0 - r, c: 2 });
+            }
+            if (c.right) {
+                if (!c.bottom) out.push({ x: W - t - r, y: y1, c: 1 });
+                if (!c.top) out.push({ x: W - t - r, y: y0 - r, c: 3 });
+            }
+            if (c.bottom && barTop) {
+                if (!c.left) out.push({ x: x0 - r, y: H - t - r, c: 3 });
+                if (!c.right) out.push({ x: x1, y: H - t - r, c: 2 });
+            }
+            if (c.top && !barTop) {
+                if (!c.left) out.push({ x: x0 - r, y: t, c: 1 });
+                if (!c.right) out.push({ x: x1, y: t, c: 0 });
+            }
+            return out;
+        }
+        delegate: ShaderEffect {
+            required property var modelData
+            x: modelData.x; y: modelData.y
+            width: masterWindow.convexRadius; height: width
+            opacity: contentStage.opacity
+            property real cornerIndex: modelData.c
+            property vector2d itemSize: Qt.vector2d(width, height)
+            property color color: ThemeBackend.base
+            fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
+        }
     }
 
     Item {
@@ -473,6 +564,8 @@ PanelWindow {
         let result = Registry.getLayout(name, 0, 0, scrW, scrH, masterWindow.globalUiScale, bp);
         if (!result) return null;
 
+        if (masterWindow.isConvexAttached(name)) return masterWindow.convexLayout(name, result, scrW, scrH);
+
         let scale = masterWindow.globalUiScale || 1.0;
         let isFixed = (name === "guide" || name === "wallpaper" || name === "notifications" || name === "system" || name === "hidden");
 
@@ -532,6 +625,9 @@ PanelWindow {
         }
 
         let x = (tw !== t.w) ? recenterX(t, tw) : t.rx;
+        if (convexDropdowns.indexOf(currentActive) !== -1 && isConvex) {
+            x = Math.max(convexFrame, Math.min(masterWindow.width - convexFrame - tw, x));
+        }
         return { x: x, y: t.ry, w: tw, h: th };
     }
 
@@ -600,7 +696,8 @@ PanelWindow {
             height: masterWindow._stageH
             x: (animContainer.width - width) / 2
             y: (animContainer.height - height) / 2
-            transformOrigin: Item.Center
+            transformOrigin: ConvexState.origin
+            onOpacityChanged: ConvexState.opacity = opacity
 
             scale: masterWindow.isVisible ? 1.0 : 0.96
             Behavior on scale {

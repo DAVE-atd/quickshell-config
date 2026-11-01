@@ -101,6 +101,8 @@ Item {
         anchors.fill: parent
         color: ThemeBackend.faded(ThemeBackend.base)
         radius: ThemeBackend.borderRadius
+        topRightRadius: ConvexState.tr(radius)
+        bottomRightRadius: ConvexState.br(radius)
         clip: true
         opacity: root.introContent
 

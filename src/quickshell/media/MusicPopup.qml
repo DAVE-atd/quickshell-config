@@ -387,20 +387,27 @@ MusicEqualizerState {
         anchors.fill: parent
         
         scale: 0.92 + (0.08 * popupRoot.introMain)
+        transformOrigin: ConvexState.origin
         opacity: popupRoot.introMain
         transform: Translate { y: popupRoot.s(12) * (1 - popupRoot.introMain) }
 
         MusicBorder {
             id: borderLayer
             root: popupRoot
+            // Convex bar style: plain attached panel without the decorative border
+            visible: !ConvexState.active
         }
 
         Rectangle {
             id: innerBg
             anchors.fill: parent
-            anchors.margins: ThemeBackend.liquidGlass ? 0 : popupRoot.s(3)
+            anchors.margins: (ThemeBackend.liquidGlass || ConvexState.active) ? 0 : popupRoot.s(3)
             color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
             radius: ThemeBackend.borderRadius
+            topLeftRadius: ConvexState.tl(radius)
+            topRightRadius: ConvexState.tr(radius)
+            bottomLeftRadius: ConvexState.bl(radius)
+            bottomRightRadius: ConvexState.br(radius)
 
             WallpaperBlur {
                 z: -1
@@ -412,6 +419,10 @@ MusicEqualizerState {
                 id: innerBgMask
                 anchors.fill: parent
                 radius: ThemeBackend.borderRadius
+                topLeftRadius: innerBg.topLeftRadius
+                topRightRadius: innerBg.topRightRadius
+                bottomLeftRadius: innerBg.bottomLeftRadius
+                bottomRightRadius: innerBg.bottomRightRadius
                 visible: false
                 layer.enabled: true 
             }

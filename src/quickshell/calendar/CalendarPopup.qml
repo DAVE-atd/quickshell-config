@@ -458,11 +458,17 @@ Item {
     Item {
         anchors.fill: parent
         scale: 0.95 + (0.05 * introMain)
+        transformOrigin: ConvexState.origin
         opacity: introMain
 
         Rectangle {
             anchors.fill: parent
             radius: ThemeBackend.borderRadius
+            // Convex bar style: square corners on sides attached to the bar or frame
+            topLeftRadius: ConvexState.tl(radius)
+            topRightRadius: ConvexState.tr(radius)
+            bottomLeftRadius: ConvexState.bl(radius)
+            bottomRightRadius: ConvexState.br(radius)
             color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
             clip: true
 

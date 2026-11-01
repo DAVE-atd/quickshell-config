@@ -95,7 +95,8 @@ Variants {
                 implicitWidth: root.thickness
                 implicitHeight: root.thickness
                 exclusiveZone: root.thickness
-                WlrLayershell.layer: WlrLayer.Bottom
+                // Overlay: arranged after the bar (Top), so the bar keeps the full screen width
+                WlrLayershell.layer: WlrLayer.Overlay
                 WlrLayershell.namespace: "qs-frame-zone"
                 color: "transparent"
                 mask: Region {}
