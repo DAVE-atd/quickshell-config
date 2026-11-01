@@ -177,8 +177,8 @@ PanelWindow {
     property bool isSideBar: barPosition === "left" || barPosition === "right"
     property bool isRightBar: barPosition === "right"
     property bool isBottomBar: barPosition === "bottom"
-    property bool isFill: barStyle === "fill"
-    property bool isSolid: barStyle === "solid" || barStyle === "fill"
+    property bool isFill: barStyle === "fill" || barStyle === "convex"
+    property bool isSolid: barStyle === "solid" || barStyle === "fill" || barStyle === "convex"
     readonly property bool isAttached: attachToBar && isSolid && !isBarEffectivelyHidden && (!isSideBar || !isToggleKind) && (isSideBar ? isVertical : !isVertical)
     readonly property bool isVerticalLayout: isAttached ? isSideBar : isVertical
 

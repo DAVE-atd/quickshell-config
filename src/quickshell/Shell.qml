@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "widgets"
+import "frame"
 
 ShellRoot {
     readonly property bool performanceMode: !!(Config.getSetting("general", {}).performance)
@@ -48,6 +49,7 @@ ShellRoot {
 
     Main {}
     Bar {}
+    ScreenFrame {}
     Lock {}
     WidgetRedactor {}
     LockRedactor {}

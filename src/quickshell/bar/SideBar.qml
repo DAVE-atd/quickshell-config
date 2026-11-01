@@ -27,8 +27,8 @@ Item {
         }
         return "modular";
     }
-    property bool isFill: barStyle === "fill"
-    property bool isSolid: barStyle === "solid" || barStyle === "fill"
+    property bool isFill: barStyle === "fill" || barStyle === "convex"
+    property bool isSolid: barStyle === "solid" || barStyle === "fill" || barStyle === "convex"
     property bool distinctPills: barWindow ? (barWindow.distinctPills !== undefined ? barWindow.distinctPills : false) : false
     property real cornerRadius: barWindow ? barWindow.cornerRadius : 12
     property bool barAtRight: !!barWindow && barWindow.barPosition === "right"

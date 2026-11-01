@@ -398,7 +398,8 @@
         "desc": "Choose between modular, solid or a filled bar look",
         "modular": "Modular",
         "solid": "Solid",
-        "fill": "Fill"
+        "fill": "Fill",
+        "convex": "Convex"
       },
       "time": {
         "title": "Time format",

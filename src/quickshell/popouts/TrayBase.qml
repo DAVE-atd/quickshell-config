@@ -98,8 +98,8 @@ PanelWindow {
         TrayMenuController.hide();
     }
 
-    property bool isFill: barStyle === "fill"
-    property bool isSolid: barStyle === "solid" || barStyle === "fill"
+    property bool isFill: barStyle === "fill" || barStyle === "convex"
+    property bool isSolid: barStyle === "solid" || barStyle === "fill" || barStyle === "convex"
 
     property real barHeight: {
         let dummy = configRevision;

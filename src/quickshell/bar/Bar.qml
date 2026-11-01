@@ -86,8 +86,11 @@ Variants {
                 }
                 return "modular";
             }
-            property bool isFill: barStyle === "fill"
-            property bool isSolid: barStyle === "solid" || barStyle === "fill"
+            property bool isFill: barStyle === "fill" || barStyle === "convex"
+            property bool isSolid: barStyle === "solid" || barStyle === "fill" || barStyle === "convex"
+            // Convex: fill bar shrunk to a frame strip with bulges (ConvexBulges.qml) + screen frame (frame/ScreenFrame.qml)
+            property bool isConvex: barStyle === "convex" && !isVertical
+            property int convexFrame: s(7)
             property bool distinctPills: {
                 let dummy = configRevision;
                 return (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.distinctPills !== undefined) ? Config.rawSettings.bar.distinctPills : false;
@@ -112,7 +115,7 @@ Variants {
                 let dummy = configRevision;
                 return (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar && Config.rawSettings.bar.autohideTimeout !== undefined) ? Config.rawSettings.bar.autohideTimeout : 1000;
             }
-            property real barOpacity: ThemeBackend.elementOpacity
+            property real barOpacity: isConvex ? 1.0 : ThemeBackend.elementOpacity
 
             HoverHandler {
                 id: barHover

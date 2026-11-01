@@ -27,8 +27,9 @@ Item {
         }
         return "modular";
     }
-    property bool isFill: barStyle === "fill"
-    property bool isSolid: barStyle === "solid" || barStyle === "fill"
+    property bool isFill: barStyle === "fill" || barStyle === "convex"
+    property bool isSolid: barStyle === "solid" || barStyle === "fill" || barStyle === "convex"
+    property bool isConvex: !!barWindow && !!barWindow.isConvex
     property bool distinctPills: barWindow ? (barWindow.distinctPills !== undefined ? barWindow.distinctPills : false) : false
     property real cornerRadius: barWindow ? barWindow.cornerRadius : 12
     property bool barAtBottom: !!barWindow && barWindow.barPosition === "bottom"
@@ -41,7 +42,7 @@ Item {
     }
 
     property bool fillDetached: isFill && !!barWindow && !barWindow.fillAttached
-    property bool outerCornersReady: fillDetached && solidBackground.x <= 3 && solidBackground.x + solidBackground.width >= contentWrapper.width - 3
+    property bool outerCornersReady: fillDetached && !isConvex && solidBackground.x <= 3 && solidBackground.x + solidBackground.width >= contentWrapper.width - 3
 
     property bool suppressAnimation: false
     property bool layoutAnimationsEnabled: barWindow && barWindow.startupCascadeFinished && !barWindow.positionChanging && !contentWrapper.suppressAnimation
@@ -556,10 +557,10 @@ Item {
 
     Rectangle {
         id: solidBackground
-        x: Math.round(contentWrapper.dynamicMinX)
-        width: Math.round(contentWrapper.dynamicMaxX) - Math.round(contentWrapper.dynamicMinX)
-        height: barWindow ? barWindow.barHeight : 0
-        y: barWindow ? barWindow.baseOffsetY : 0
+        x: contentWrapper.isConvex ? 0 : Math.round(contentWrapper.dynamicMinX)
+        width: contentWrapper.isConvex ? contentWrapper.width : Math.round(contentWrapper.dynamicMaxX) - Math.round(contentWrapper.dynamicMinX)
+        height: barWindow ? (contentWrapper.isConvex ? barWindow.convexFrame : barWindow.barHeight) : 0
+        y: barWindow ? ((contentWrapper.isConvex && contentWrapper.barAtBottom) ? barWindow.baseOffsetY + barWindow.barHeight - barWindow.convexFrame : barWindow.baseOffsetY) : 0
         color: Qt.alpha(ThemeBackend.base, (barWindow && barWindow.barOpacity !== undefined) ? barWindow.barOpacity : 1.0)
         radius: isFill ? 0 : ThemeBackend.borderRadius
         topLeftRadius: isFill ? (contentWrapper.barAtBottom ? contentWrapper.fillFarRadius : 0) : radius
@@ -594,6 +595,12 @@ Item {
             enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
             NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
         }
+    }
+
+    ConvexBulges {
+        bar: contentWrapper
+        visible: contentWrapper.isConvex && (barWindow ? !barWindow.positionChanging : true)
+        z: 0
     }
 
     ShaderEffect {

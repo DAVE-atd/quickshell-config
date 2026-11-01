@@ -65,7 +65,7 @@ PanelWindow {
         }
         return "modular";
     }
-    property bool isBarFill: barStyle === "fill"
+    property bool isBarFill: barStyle === "fill" || barStyle === "convex"
     property int barThickness: s(40) + (isBarFill || isBarEffectivelyHidden ? 0 : s(4))
 
     property var notifSettings: Config.getSetting("notifications", { "dnd": false, "position": "top right", "horizontalPosition": 95, "verticalPosition": 5 })

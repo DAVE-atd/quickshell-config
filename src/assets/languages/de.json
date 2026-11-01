@@ -396,7 +396,8 @@
         "desc": "Zwischen modularer, durchgehender oder ausgefüllter Leiste wählen",
         "modular": "Modular",
         "solid": "Durchgehend",
-        "fill": "Ausgefüllt"
+        "fill": "Ausgefüllt",
+        "convex": "Konvex"
       },
       "time": {
         "title": "Zeitformat",

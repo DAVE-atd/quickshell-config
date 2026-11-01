@@ -385,7 +385,7 @@ PanelWindow {
         }
         return "modular";
     }
-    readonly property bool isBarSolid: barStyle === "solid" || barStyle === "fill"
+    readonly property bool isBarSolid: barStyle === "solid" || barStyle === "fill" || barStyle === "convex"
 
     readonly property bool isOsdFullscreen: (typeof OsdController !== "undefined") ? Boolean(OsdController.isFullscreen) : false
     readonly property bool isToplevelFullscreen: {
