@@ -8,6 +8,9 @@ ShellRoot {
     readonly property bool quickactionsEnabled: Config.getSetting("general", {}).quickactions !== false
     readonly property bool dockEnabled: Config.getSetting("dock", {}).enabled !== false
 
+    // Background services without UI of their own (singletons start on first reference)
+    readonly property var usbguard: UsbguardService
+
     Connections {
         target: Quickshell
         function onReloadCompleted() { Quickshell.inhibitReloadPopup() }
