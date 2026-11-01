@@ -191,6 +191,12 @@ QtObject {
             defaultVariant: "default",
             face: "faces/security/SecurityFace.qml"
         },
+        "tailscale": {
+            name: "Tailscale",
+            icon: "󰖂",
+            defaultVariant: "default",
+            face: "faces/tailscale/TailscaleFace.qml"
+        },
         "bt": {
             name: typeof I18n !== "undefined" ? I18n.t("guide.bar.modules.bluetooth", "Bluetooth") : "Bluetooth",
             icon: "󰂲",

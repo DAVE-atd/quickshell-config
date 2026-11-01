@@ -64,6 +64,7 @@ singleton Updater 1.0 singletons/system/Updater.qml
 singleton ClamavService 1.0 singletons/security/ClamavService.qml
 singleton UsbguardService 1.0 singletons/security/UsbguardService.qml
 singleton VulnixService 1.0 singletons/security/VulnixService.qml
+singleton TailscaleService 1.0 singletons/security/TailscaleService.qml
 singleton WindowTracker 1.0 singletons/system/WindowTracker.qml
 
 singleton SysData 1.0 singletons/info/SysData.qml
