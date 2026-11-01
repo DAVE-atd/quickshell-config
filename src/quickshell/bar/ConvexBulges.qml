@@ -36,6 +36,21 @@ Item {
         { x: ConvexState.x, w: popupAttached ? ConvexState.w : 0, pad: 0, popup: true }
     ]
 
+    // Rounded inner corners of the screen frame on the bar's edge (frame/ScreenFrame.qml draws the rest)
+    readonly property real frameRadius: s(16)
+    Corner {
+        x: root.frame
+        y: root.atBottom ? root.edgeY + root.barH - root.frame - height : root.edgeY + root.frame
+        width: root.frameRadius; height: root.frameRadius
+        cornerIndex: root.atBottom ? 2 : 0
+    }
+    Corner {
+        x: root.width - root.frame - width
+        y: root.atBottom ? root.edgeY + root.barH - root.frame - height : root.edgeY + root.frame
+        width: root.frameRadius; height: root.frameRadius
+        cornerIndex: root.atBottom ? 3 : 1
+    }
+
     Repeater {
         model: 4
         delegate: Item {

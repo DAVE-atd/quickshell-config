@@ -1512,8 +1512,9 @@ Item {
         anchors.fill: parent
         visible: popupWindowRoot.visible
         enabled: popupWindowRoot.visible
-        opacity: popupWindowRoot.exitOpacity * popupWindowRoot.easeOut(popupWindowRoot.animWin(popupWindowRoot.introState, 0.0, 0.12))
-        scale: (0.96 + 0.04 * popupWindowRoot.easeOut(popupWindowRoot.animWin(popupWindowRoot.introState, 0.0, 0.12))) * (0.97 + 0.03 * popupWindowRoot.exitOpacity)
+        opacity: ConvexState.active ? 1 : popupWindowRoot.exitOpacity * popupWindowRoot.easeOut(popupWindowRoot.animWin(popupWindowRoot.introState, 0.0, 0.12))
+        // convex: Main.qml slides it out of the bar
+        scale: ConvexState.active ? 1 : (0.96 + 0.04 * popupWindowRoot.easeOut(popupWindowRoot.animWin(popupWindowRoot.introState, 0.0, 0.12))) * (0.97 + 0.03 * popupWindowRoot.exitOpacity)
         transformOrigin: ConvexState.origin
 
         Rectangle {

@@ -386,10 +386,10 @@ MusicEqualizerState {
         id: mainWrapper
         anchors.fill: parent
         
-        scale: 0.92 + (0.08 * popupRoot.introMain)
+        scale: ConvexState.active ? 1 : 0.92 + (0.08 * popupRoot.introMain)   // convex: Main.qml slides it out of the bar
         transformOrigin: ConvexState.origin
-        opacity: popupRoot.introMain
-        transform: Translate { y: popupRoot.s(12) * (1 - popupRoot.introMain) }
+        opacity: ConvexState.active ? 1 : popupRoot.introMain
+        transform: Translate { y: ConvexState.active ? 0 : popupRoot.s(12) * (1 - popupRoot.introMain) }
 
         MusicBorder {
             id: borderLayer

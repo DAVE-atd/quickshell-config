@@ -337,7 +337,9 @@ Item {
     property real lcGap: (lWidthTarget > 0 && cWidthTarget > 0) ? gap8 : 0
     property real crGap: (cWidthTarget > 0 && rWidthTarget > 0) ? gap8 : 0
 
-    property real distinctEdgePadding: (isSolid && distinctPills) ? (barWindow ? barWindow.s(4) : 4) : 4
+    // Convex: keep the sections clear of the side frame
+    property real distinctEdgePadding: (isConvex && barWindow) ? (barWindow.convexFrame + barWindow.s(6))
+        : (isSolid && distinctPills) ? (barWindow ? barWindow.s(4) : 4) : 4
     property real fillInset: distinctEdgePadding
 
     property bool centerByEdges: !!barWindow && barWindow.centerByEdges === true && layoutState === "default"

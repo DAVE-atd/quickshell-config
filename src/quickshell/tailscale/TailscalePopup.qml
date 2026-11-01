@@ -70,10 +70,10 @@ Item {
 
     Item {
         anchors.fill: parent
-        scale: 0.95 + 0.05 * root.intro
+        scale: ConvexState.active ? 1 : 0.95 + 0.05 * root.intro   // convex: Main.qml slides it out of the bar
         transformOrigin: ConvexState.origin
-        opacity: root.intro
-        transform: Translate { y: root.s(20) * (1 - root.intro) }
+        opacity: ConvexState.active ? 1 : root.intro
+        transform: Translate { y: ConvexState.active ? 0 : root.s(20) * (1 - root.intro) }
 
         Rectangle {
             anchors.fill: parent

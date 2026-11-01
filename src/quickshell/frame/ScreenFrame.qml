@@ -24,7 +24,7 @@ Variants {
     readonly property string barPosition: barSettings.position || "top"
     readonly property bool active: barSettings.style === "convex" && (barPosition === "top" || barPosition === "bottom")
 
-    // Must match bar/Bar.qml (convexFrame: s(7))
+    // Must match bar/Bar.qml (convexFrame: s(7)) and bar/ConvexBulges.qml (frameRadius: s(16))
     readonly property int thickness: Math.round(Scaler.s(7))
     readonly property int radius: Math.round(Scaler.s(16))
 
@@ -60,11 +60,13 @@ Variants {
             Rectangle { x: 0; y: frameWin.t; width: frameWin.t; height: parent.height - 2 * frameWin.t; color: ThemeBackend.base }
             Rectangle { x: parent.width - frameWin.t; y: frameWin.t; width: frameWin.t; height: parent.height - 2 * frameWin.t; color: ThemeBackend.base }
 
-            // Rounded inner corners (cornerIndex = filled corner: 0 TL, 1 TR, 2 BL, 3 BR)
+            // Rounded inner corners on the edge opposite the bar (cornerIndex = filled corner:
+            // 0 TL, 1 TR, 2 BL, 3 BR). The bar draws its own two below its pills (ConvexBulges.qml).
             Repeater {
-                model: [
+                model: scope.barAtBottom ? [
                     { x: frameWin.t,                          y: frameWin.t,                           c: 0 },
-                    { x: frameWin.width - frameWin.t - frameWin.r, y: frameWin.t,                      c: 1 },
+                    { x: frameWin.width - frameWin.t - frameWin.r, y: frameWin.t,                      c: 1 }
+                ] : [
                     { x: frameWin.t,                          y: frameWin.height - frameWin.t - frameWin.r, c: 2 },
                     { x: frameWin.width - frameWin.t - frameWin.r, y: frameWin.height - frameWin.t - frameWin.r, c: 3 }
                 ]

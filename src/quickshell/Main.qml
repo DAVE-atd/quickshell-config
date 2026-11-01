@@ -262,7 +262,7 @@ PanelWindow {
     // Bar style "convex": dropdowns hang from the bar, side panels from the screen frame.
     // Geometry goes to ConvexState (bar/ConvexBulges.qml draws the bar side, popups square their corners).
     readonly property bool isConvex: rawBarSettings.style === "convex" && (barPosition === "top" || barPosition === "bottom") && !isBarEffectivelyHidden
-    readonly property var convexDropdowns: ["network", "tailscale", "security", "volume", "calendar", "music"]
+    readonly property var convexDropdowns: ["network", "tailscale", "security", "volume", "music"]
     readonly property int convexFrame: Math.round(Scaler.s(7))   // bar/Bar.qml convexFrame
     readonly property int convexRadius: Math.round(Scaler.s(12)) // bar/Bar.qml cornerRadius
     readonly property int convexBarH: {
@@ -697,9 +697,26 @@ PanelWindow {
             x: (animContainer.width - width) / 2
             y: (animContainer.height - height) / 2
             transformOrigin: ConvexState.origin
-            onOpacityChanged: ConvexState.opacity = opacity
 
-            scale: masterWindow.isVisible ? 1.0 : 0.96
+            // Convex: dropdowns slide out of the bar like a drawer (clipped by animContainer).
+            // tuck 0 = out, 1 = pulled into the bar edge; starts closing as soon as isClosing is set.
+            readonly property bool isDrawer: masterWindow.isConvex && masterWindow.convexDropdowns.indexOf(masterWindow.currentActive) !== -1
+            readonly property bool shown: masterWindow.isVisible && !masterWindow.isClosing
+            property real tuck: shown ? 0 : 1
+            Behavior on tuck {
+                NumberAnimation {
+                    duration: contentStage.shown ? 320 : 200
+                    easing.type: contentStage.shown ? Easing.OutCubic : Easing.InCubic
+                }
+            }
+            transform: Translate {
+                y: contentStage.isDrawer ? contentStage.tuck * (masterWindow.barPosition === "bottom" ? contentStage.height : -contentStage.height) : 0
+            }
+            // The bar's bulge above the popup is there as long as the drawer is out at all
+            readonly property real convexOpacity: (contentStage.isDrawer && tuck >= 0.999) ? 0 : opacity
+            onConvexOpacityChanged: ConvexState.opacity = convexOpacity
+
+            scale: (masterWindow.isVisible || contentStage.isDrawer) ? 1.0 : 0.96
             Behavior on scale {
                 NumberAnimation {
                     duration: masterWindow.isVisible ? 280 : 160
@@ -711,7 +728,8 @@ PanelWindow {
             visible: masterWindow.isVisible || opacity > 0
             Behavior on opacity {
                 NumberAnimation {
-                    duration: masterWindow.isVisible ? 200 : 140
+                    // A drawer opens solid (it slides in from under the bar instead)
+                    duration: masterWindow.isVisible ? (contentStage.isDrawer ? 0 : 200) : 140
                     easing.type: Easing.OutCubic
                 }
             }
