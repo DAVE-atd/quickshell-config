@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import "widgets"
 import "frame"
+import "bluetooth"
 
 ShellRoot {
     readonly property bool performanceMode: !!(Config.getSetting("general", {}).performance)
@@ -50,6 +51,7 @@ ShellRoot {
     Main {}
     Bar {}
     ScreenFrame {}
+    OrbitHost {}   // Orbit Bluetooth background services (bluetooth/BluetoothPopup.qml)
     Lock {}
     WidgetRedactor {}
     LockRedactor {}

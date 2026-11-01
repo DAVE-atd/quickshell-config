@@ -262,7 +262,7 @@ PanelWindow {
     // Bar style "convex": dropdowns hang from the bar, side panels from the screen frame.
     // Geometry goes to ConvexState (bar/ConvexBulges.qml draws the bar side, popups square their corners).
     readonly property bool isConvex: rawBarSettings.style === "convex" && (barPosition === "top" || barPosition === "bottom") && !isBarEffectivelyHidden
-    readonly property var convexDropdowns: ["network", "tailscale", "security", "volume", "music"]
+    readonly property var convexDropdowns: ["network", "bluetooth", "tailscale", "security", "volume", "music"]
     readonly property int convexFrame: Math.round(Scaler.s(7))   // bar/Bar.qml convexFrame
     readonly property int convexRadius: Math.round(Scaler.s(12)) // bar/Bar.qml cornerRadius
     readonly property int convexBarH: {

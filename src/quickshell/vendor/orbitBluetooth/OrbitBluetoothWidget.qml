@@ -1,0 +1,181 @@
+import QtQuick
+import qs.Common
+import qs.Services
+import qs.Widgets
+import qs.Modules.Plugins
+import "components/device"
+import "components/scene"
+import "components/common/Hidden.js" as Hidden
+import "components/device/DeviceCatalog.js" as Catalog
+import "diagnostics/Log.js" as Log
+
+// Bar pill + bar popout + Control Center tile. The Control Center detail is a
+// fresh instance created when the tile expands and destroyed when it
+// collapses, so scanning and animation live exactly as long as the panel.
+PluginComponent {
+    id: root
+
+    // One memory write each way: which surfaces are alive shows in a report
+    Component.onCompleted: Log.event("ORB-I020", {
+        "surface": "widget"
+    })
+    Component.onDestruction: Log.event("ORB-I021", {
+        "surface": "widget"
+    })
+
+    // The sky color shared with the scene
+    readonly property NightColors night: NightColors {}
+
+    // Devices hidden in the black hole are left out here too
+    readonly property var hiddenDevices: pluginData.hiddenDevices ?? ({})
+    readonly property var connectedDevices: {
+        const all = BluetoothService.adapter?.devices?.values ?? [];
+        return all.filter(d => d && d.connected && !Hidden.isHidden(hiddenDevices, d.address));
+    }
+    readonly property var overrides: pluginData.glyphOverrides ?? ({})
+
+    // --- Control Center -------------------------------------------------------
+    ccWidgetIcon: !BluetoothService.enabled ? "bluetooth_disabled" : connectedDevices.length > 0 ? "bluetooth_connected" : "bluetooth"
+    ccWidgetPrimaryText: "OrbitBluetooth"
+    // The tile is narrow and cannot elide: long device names would spill out
+    function short(name) {
+        return name.length > 12 ? name.slice(0, 11).trimEnd() + "…" : name;
+    }
+    ccWidgetSecondaryText: {
+        if (!BluetoothService.available)
+            return "Unavailable";
+        if (!BluetoothService.enabled)
+            return "Off";
+        const n = connectedDevices.length;
+        if (n === 0)
+            return "No devices";
+        if (n === 1)
+            return short(Catalog.deviceName(connectedDevices[0]));
+        return n + " devices";
+    }
+    ccWidgetIsActive: BluetoothService.enabled
+    // Compact orbit (440 / 1.4) when the Control Center opens; grows while a
+    // detail card is open so the card fits without scrolling
+    property real ccCardFit: 0
+    ccDetailHeight: Math.max(314, Math.ceil(ccCardFit))
+
+    onCcWidgetToggled: BluetoothService.toggleBluetooth()
+
+    ccDetailContent: Component {
+        Rectangle {
+            radius: Theme.cornerRadius
+            color: root.night.sky
+            clip: true
+
+            OrbitScene {
+                anchors.fill: parent
+                active: true
+                cornerRadius: Theme.cornerRadius
+                foldVolume: true
+                onFocusFitHeightChanged: root.ccCardFit = focusFitHeight
+                Component.onDestruction: root.ccCardFit = 0
+            }
+        }
+    }
+
+    // --- Bar ------------------------------------------------------------------
+    component ConnectedStack: Row {
+        spacing: -4
+        Repeater {
+            model: root.connectedDevices.slice(0, 3)
+            Rectangle {
+                width: root.iconSize + 2
+                height: width
+                radius: width / 2
+                color: Theme.surfaceContainerHigh
+                border.width: 1
+                border.color: Theme.withAlpha(Theme.primary, 0.5)
+                anchors.verticalCenter: parent ? parent.verticalCenter : undefined
+
+                DeviceGlyph {
+                    anchors.centerIn: parent
+                    width: parent.width * 0.64
+                    height: width
+                    kind: Catalog.resolve(modelData, root.overrides)
+                    color: Theme.primary
+                    stroke: 1.8
+                }
+            }
+        }
+    }
+
+    horizontalBarPill: Component {
+        Row {
+            spacing: Theme.spacingXS
+
+            DankIcon {
+                name: root.ccWidgetIcon
+                size: root.iconSize
+                color: BluetoothService.enabled ? (root.connectedDevices.length ? Theme.primary : Theme.widgetIconColor ?? Theme.surfaceText) : Theme.surfaceVariantText
+                anchors.verticalCenter: parent.verticalCenter
+                visible: root.connectedDevices.length === 0
+            }
+            ConnectedStack {
+                anchors.verticalCenter: parent.verticalCenter
+                visible: root.connectedDevices.length > 0
+            }
+        }
+    }
+
+    verticalBarPill: Component {
+        Column {
+            spacing: 2
+            DankIcon {
+                name: root.ccWidgetIcon
+                size: root.iconSize
+                color: root.connectedDevices.length ? Theme.primary : Theme.surfaceText
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+            StyledText {
+                visible: root.connectedDevices.length > 0
+                text: root.connectedDevices.length
+                color: Theme.primary
+                font.pixelSize: Theme.fontSizeSmall
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+        }
+    }
+
+    pillRightClickAction: () => BluetoothService.toggleBluetooth()
+
+    // The pairing sheet (daemon) takes over: close the orbit behind it
+    readonly property bool sheetShown: !!(PluginService.globalVars[pluginId] || {}).sheetShown
+    onSheetShownChanged: if (sheetShown)
+        closePopout()
+
+    popoutWidth: 520
+    // Grows while a detail card is open, like the Control Center tile
+    property real popCardFit: 0
+    popoutHeight: Math.max(440, Math.ceil(popCardFit))
+
+    popoutContent: Component {
+        Item {
+            id: pop
+            property var parentPopout: null
+            width: parent ? parent.width : 0
+            implicitHeight: root.popoutHeight
+
+            Rectangle {
+                anchors.fill: parent
+                radius: Theme.cornerRadius
+                color: root.night.sky
+                clip: true
+
+                OrbitScene {
+                    anchors.fill: parent
+                    cornerRadius: Theme.cornerRadius
+                    foldVolume: true
+                    // The popout keeps its content loaded; only run while shown
+                    active: pop.parentPopout ? pop.parentPopout.shouldBeVisible : true
+                    onFocusFitHeightChanged: root.popCardFit = focusFitHeight
+                    Component.onDestruction: root.popCardFit = 0
+                }
+            }
+        }
+    }
+}

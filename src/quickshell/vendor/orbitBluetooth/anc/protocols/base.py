@@ -1,0 +1,179 @@
+"""Shared shape of every vendor protocol.
+
+Each brand module subclasses Protocol and only deals with bytes: framing,
+the handshake, and turning packets into the common state below. The runner
+(orbit_anc.py) owns the socket and the stdin/stdout plumbing.
+
+Common vocabulary, used as-is by the QML side:
+  features = {
+      "modes":      ["off", "nc", "ambient", "adaptive"]  (subset, in cycle order)
+      "ambientMax": highest level of the slider, 0 when there is no slider
+      "levelMode":  mode the slider belongs to: "ambient" (ambient level) or
+                    "adaptive" (AirPods adaptive noise level)
+      "voice":      True when "focus on voice" exists
+      "chat":       True when a conversation-detection feature exists
+      "chatEnds":   True once the headset reported how long a conversation lasts
+      "wear":       True when the headset can report whether it is worn
+  }
+  state = {
+      "mode": "off" | "nc" | "ambient" | "adaptive" | None,
+      "ambient": int | None, "voice": bool | None, "chat": bool | None,
+      "chatEnds": 0-3 | None (short, standard, long, never),
+      "wearing": 0-4 | None (the headset's own code: 0 worn, 4 both off),
+      "battery": {"left"|"right"|"case"|"single": {"level": 0-100, "charging": bool}}
+  }
+"""
+
+import copy
+
+MODES = ("off", "nc", "ambient", "adaptive")
+
+
+class Protocol:
+    # ("rfcomm", [service uuids], fallback channel(s)) or ("l2cap", psm)
+    transport = None
+    # Headsets that never answer about noise control still show their
+    # battery: after this many seconds without a mode, the session is ready
+    # anyway (with no modes). None = the brand decides on its own.
+    ready_timeout = None
+
+    def __init__(self, send, name=""):
+        self._send = send
+        # The Bluetooth name, for brands whose capabilities depend on the model
+        self.name = name
+        self._started_at = None
+        self.buffer = bytearray()
+        self.ready = False
+        # "set" commands received before the handshake finished
+        self.pending = []
+        # number of our writes the headset has not acknowledged yet
+        self.awaiting = 0
+        # Settings asked for before the headset announced the feature (e.g.
+        # Apple only reports Conversation Awareness after the first modes):
+        # kept and applied as soon as it exists
+        self.deferred = {}
+        self.model = ""
+        self.features = {"modes": [], "ambientMax": 0, "levelMode": "ambient", "voice": False, "chat": False,
+                         "chatEnds": False, "wear": False}
+        self.state = {"mode": None, "ambient": None, "voice": None, "chat": None,
+                      "chatEnds": None, "wearing": None, "battery": {}}
+
+    # --- to implement per brand ------------------------------------------
+
+    def start(self):
+        """Sends the handshake and the initial state queries."""
+        raise NotImplementedError
+
+    def frames(self):
+        """Yields complete packets taken from self.buffer (and removes them)."""
+        raise NotImplementedError
+
+    def handle(self, frame):
+        """Updates features/state from one packet."""
+        raise NotImplementedError
+
+    def set_mode(self, mode):
+        raise NotImplementedError
+
+    def set_ambient(self, level):
+        """Ambient level; brands may also need the current mode and voice."""
+
+    def set_voice(self, enabled):
+        pass
+
+    def set_chat(self, enabled):
+        pass
+
+    def set_chat_ends(self, duration):
+        pass
+
+    def set_wear(self, enabled):
+        """Starts (or stops) reporting whether the headset is worn."""
+
+    def refresh(self):
+        """Asks the headset for its current state again."""
+
+    def wants_tick(self):
+        """True while a retry or timeout is pending: the runner then keeps
+        calling tick() every quarter second instead of sleeping until the
+        next packet."""
+        return False
+
+    def tick(self, now):
+        """Called after every event, for retries or timeouts."""
+        if self._started_at is None:
+            self._started_at = now
+        elif not self.ready and self.ready_timeout and now - self._started_at > self.ready_timeout:
+            self.mark_ready()
+
+    # --- shared plumbing ---------------------------------------------------
+
+    def send(self, data):
+        self._send(bytes(data))
+
+    # No real frame comes near this; a device sending endless bytes without
+    # a frame end must not make the helper grow without limit (P117)
+    MAX_BUFFER = 64 * 1024
+    # Features a headset announces after "ready": their settings can arrive first
+    LATE_FEATURES = ("chat", "chatEnds")
+
+    def receive(self, data):
+        self.buffer += data
+        for frame in self.frames():
+            self.handle(frame)
+        if len(self.buffer) > self.MAX_BUFFER:
+            del self.buffer[:-self.MAX_BUFFER]
+
+    def mark_ready(self):
+        if self.ready:
+            return
+        self.ready = True
+        waiting, self.pending = self.pending, []
+        for key, value in waiting:
+            self.set(key, value)
+
+    def set(self, key, value):
+        """Dispatches a textual "set <key> <value>" command."""
+        if key in self.LATE_FEATURES:
+            if not self.features[key]:
+                # Asked before the headset announced it: kept, applied by
+                # flush_deferred (answering OK and dropping it would be silent)
+                self.deferred[key] = value
+                return
+            self.deferred.pop(key, None)
+        if key == "mode" and value in self.features["modes"]:
+            self.set_mode(value)
+        elif key == "ambient" and self.features["ambientMax"]:
+            self.set_ambient(max(0, min(self.features["ambientMax"], int(value))))
+        elif key == "voice" and self.features["voice"]:
+            self.set_voice(value in ("1", "true", "on"))
+        elif key == "chat":
+            self.set_chat(value in ("1", "true", "on"))
+        elif key == "chatEnds" and value in ("0", "1", "2", "3"):
+            self.set_chat_ends(int(value))
+        elif key == "wear" and self.features["wear"]:
+            self.set_wear(value in ("1", "true", "on"))
+
+    def flush_deferred(self):
+        if not self.ready:
+            return
+        for key in [k for k in self.deferred if self.features[k]]:
+            self.set(key, self.deferred.pop(key))
+
+    def set_battery(self, part, level, charging=False):
+        if 0 <= level <= 100:
+            self.state["battery"][part] = {"level": level, "charging": bool(charging)}
+
+    def snapshot(self):
+        # Half-built features/state are never sent: they would briefly wipe
+        # what the UI already shows (the mode selector and the halo would
+        # vanish, then come back when the handshake completes).
+        if not self.ready:
+            return {"status": "connecting"}
+        # Deep copy: the runner compares snapshots to print only changes
+        return copy.deepcopy({
+            "status": "ready",
+            "model": self.model,
+            "features": self.features,
+            "state": self.state,
+        })
