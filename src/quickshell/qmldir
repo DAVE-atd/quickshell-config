@@ -61,7 +61,9 @@ singleton SysNotif 1.0 singletons/system/SysNotif.qml
 singleton TimerState 1.0 singletons/system/TimerState.qml
 singleton Updater 1.0 singletons/system/Updater.qml
 
+singleton ClamavService 1.0 singletons/security/ClamavService.qml
 singleton UsbguardService 1.0 singletons/security/UsbguardService.qml
+singleton VulnixService 1.0 singletons/security/VulnixService.qml
 singleton WindowTracker 1.0 singletons/system/WindowTracker.qml
 
 singleton SysData 1.0 singletons/info/SysData.qml

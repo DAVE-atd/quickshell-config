@@ -10,6 +10,7 @@ ShellRoot {
 
     // Background services without UI of their own (singletons start on first reference)
     readonly property var usbguard: UsbguardService
+    readonly property var clamav: ClamavService
 
     Connections {
         target: Quickshell

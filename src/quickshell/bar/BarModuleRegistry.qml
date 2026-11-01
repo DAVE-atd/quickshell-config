@@ -185,6 +185,12 @@ QtObject {
                 }
             }
         },
+        "security": {
+            name: "Security",
+            icon: "󰕥",
+            defaultVariant: "default",
+            face: "faces/security/SecurityFace.qml"
+        },
         "bt": {
             name: typeof I18n !== "undefined" ? I18n.t("guide.bar.modules.bluetooth", "Bluetooth") : "Bluetooth",
             icon: "󰂲",
