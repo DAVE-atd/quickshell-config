@@ -1,8 +1,8 @@
 // Bar style "convex": one bulge per bar section (left / center / right) hanging off the frame strip,
 // joined to it with concave corners. A section that reaches a screen side merges into the side frame
 // (frame/ScreenFrame.qml) instead. Drawn opaque in ThemeBackend.base, like the strip and the frame.
-// A popup attached to the bar (ConvexState, set by Main.qml) gets a bulge of its own width, so it
-// hangs straight off the strip.
+// A popup attached to the bar (ConvexState, set by Main.qml) and the tray menu get a bulge of their
+// own width, so they hang straight off the strip.
 import QtQuick
 import "../"
 
@@ -38,7 +38,8 @@ Item {
         { x: bar.lFinalX, w: bar.lWidthTarget, pad: pad, popup: false },
         { x: bar.cFinalX, w: bar.cWidthTarget, pad: pad, popup: false },
         { x: bar.rFinalClampedX, w: bar.rWidthTarget, pad: pad, popup: false },
-        { x: ConvexState.x, w: popupAttached ? ConvexState.w : 0, pad: 0, popup: true }
+        { x: ConvexState.x, w: popupAttached ? ConvexState.w : 0, pad: 0, popup: true },
+        { x: ConvexState.trayX, w: ConvexState.trayScreen === screenName ? ConvexState.trayW : 0, pad: 0, popup: true, tray: true }
     ]
 
     // Rounded inner corners of the screen frame on the bar's edge (frame/ScreenFrame.qml draws the rest)
@@ -57,7 +58,7 @@ Item {
     }
 
     Repeater {
-        model: 4
+        model: 5
         delegate: Item {
             id: sec
             required property int index
@@ -71,7 +72,7 @@ Item {
             readonly property real x1: touchRight ? root.width : def.x + def.w + def.pad
             readonly property real r: def.popup ? 0 : root.radius
             visible: used
-            opacity: def.popup ? ConvexState.opacity : 1
+            opacity: def.tray ? ConvexState.trayOpacity : def.popup ? ConvexState.opacity : 1
 
             Rectangle {
                 id: body

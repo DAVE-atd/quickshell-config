@@ -100,6 +100,18 @@ PanelWindow {
 
     property bool isFill: barStyle === "fill" || barStyle === "convex"
     property bool isSolid: barStyle === "solid" || barStyle === "fill" || barStyle === "convex"
+    // Convex: the bar is only a thin strip here, ConvexBulges draws a bulge above the menu instead
+    readonly property bool isConvex: barStyle === "convex" && !isSideBar
+    readonly property bool convexShown: isConvex && menuContainer.animProgress > 0.001
+    function publishConvex() {
+        ConvexState.trayScreen = (convexShown && screen) ? (screen.name || "") : "";
+        ConvexState.trayX = clampedX;
+        ConvexState.trayW = convexShown ? menuWidth : 0;
+        ConvexState.trayOpacity = menuContainer.animProgress;
+    }
+    onConvexShownChanged: publishConvex()
+    onClampedXChanged: publishConvex()
+    onMenuWidthChanged: publishConvex()
 
     property real barHeight: {
         let dummy = configRevision;
@@ -287,7 +299,9 @@ PanelWindow {
                 }
             }
 
-            property real dynamicCornerRadius: trayMenuWindow.isSolid ? Math.max(0, Math.min(trayMenuWindow.cornerRadius, (trayMenuWindow.isSideBar ? width : height))) : 0
+            onAnimProgressChanged: trayMenuWindow.publishConvex()
+
+            property real dynamicCornerRadius: trayMenuWindow.isSolid && !trayMenuWindow.isConvex ? Math.max(0, Math.min(trayMenuWindow.cornerRadius, (trayMenuWindow.isSideBar ? width : height))) : 0
 
             x: {
                 if (trayMenuWindow.isSolid) {
@@ -413,7 +427,7 @@ PanelWindow {
             Rectangle {
                 id: menuBox
                 anchors.fill: parent
-                color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+                color: trayMenuWindow.isConvex ? ThemeBackend.base : Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
                 radius: trayMenuWindow.cornerRadius
                 readonly property bool flatCorners: trayMenuWindow.isSolid
                 topLeftRadius: (flatCorners && (trayMenuWindow.isSideBar ? !trayMenuWindow.alignRight : !trayMenuWindow.alignBottom)) ? 0 : trayMenuWindow.cornerRadius

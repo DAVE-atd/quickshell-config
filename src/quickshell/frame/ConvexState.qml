@@ -25,6 +25,12 @@ Singleton {
     }
     function centerW(screen) { return centerWidths[screen] || 0 }
 
+    // Open tray menu (popouts/TrayBase.qml, own window): the bar grows a bulge of its width above it
+    property string trayScreen: ""
+    property real trayX: 0
+    property real trayW: 0
+    property real trayOpacity: 0
+
     // Sides of the popup that touch the bar or the frame
     property bool squareTop: false
     property bool squareBottom: false
