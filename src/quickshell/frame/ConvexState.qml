@@ -14,6 +14,17 @@ Singleton {
     property real h: 0
     property real opacity: 0
 
+    // Width of each bar's centre bulge incl. padding, per screen name (bar/ConvexBulges.qml).
+    // The OSD (popouts/Osd.qml) grows out of it and covers it while it shows.
+    property var centerWidths: ({})
+    function setCenterW(screen, w) {
+        if (centerWidths[screen] === w) return;
+        let m = Object.assign({}, centerWidths);
+        m[screen] = w;
+        centerWidths = m;
+    }
+    function centerW(screen) { return centerWidths[screen] || 0 }
+
     // Sides of the popup that touch the bar or the frame
     property bool squareTop: false
     property bool squareBottom: false

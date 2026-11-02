@@ -181,6 +181,15 @@ PanelWindow {
     property bool isSolid: barStyle === "solid" || barStyle === "fill" || barStyle === "convex"
     readonly property bool isAttached: attachToBar && isSolid && !isBarEffectivelyHidden && (!isSideBar || !isToggleKind) && (isSideBar ? isVertical : !isVertical)
     readonly property bool isVerticalLayout: isAttached ? isSideBar : isVertical
+    // Convex bar: the OSD takes the place of the centre bulge (workspaces) instead of hanging
+    // below the bar. It hangs off the frame strip like a bulge, grows sideways out of the centre
+    // bulge's width and covers it opaquely.
+    readonly property bool isIsland: isAttached && barStyle === "convex" && !isSideBar
+    readonly property real convexFrame: s(7) // = convexFrame in bar/Bar.qml
+    readonly property real islandStartW: {
+        let w = ConvexState.centerW(screen ? (screen.name || "") : "");
+        return w > 0 ? Math.min(w, osdWidth) : collapsedWidth;
+    }
 
     property real barHeight: {
         return (barConfig && barConfig.height) ? s(barConfig.height) : s(40);
@@ -189,8 +198,11 @@ PanelWindow {
     property real cornerRadius: ThemeBackend.borderRadius || s(12)
     property real menuMargin: isAttached ? 0 : s(20)
 
-    property real osdWidth: isVerticalLayout ? s(58) : s(296)
-    property real osdHeight: isVerticalLayout ? s(296) : s(58)
+    property real osdWidth: isIsland ? Math.max(s(296), ConvexState.centerW(screen ? (screen.name || "") : ""))
+                          : isVerticalLayout ? s(58) : s(296)
+    // A touch deeper than the bulges, so it reads as the centre bulge expanding
+    property real osdHeight: isIsland ? barHeight - convexFrame + s(4)
+                           : isVerticalLayout ? s(296) : s(58)
     property real collapsedWidth: s(58)
 
     visible: isVisible || osdContainer.animProgress > 0.001
@@ -216,6 +228,9 @@ PanelWindow {
             if (isSideBar) {
                 return (osdWindow.height - osdHeight) / 2;
             } else {
+                if (isIsland) {
+                    return isBottomBar ? osdWindow.height - convexFrame - osdHeight : convexFrame;
+                }
                 if (isBottomBar) {
                     return osdWindow.height - barHeight - osdHeight;
                 } else {
@@ -291,6 +306,9 @@ PanelWindow {
         property real dynamicCornerRadius: osdWindow.isAttached ? Math.max(0, Math.min(osdWindow.cornerRadius, (osdWindow.isSideBar ? width : height))) : 0
 
         x: {
+            if (osdWindow.isIsland) {
+                return (osdWindow.width - width) / 2;
+            }
             if (osdWindow.isAttached) {
                 if (osdWindow.isSideBar && osdWindow.isRightBar) {
                     return (osdWindow.clampedX + osdWindow.osdWidth) - width;
@@ -309,6 +327,9 @@ PanelWindow {
             return (osdWindow.height - height) * (osdWindow.verticalPosition / 100.0);
         }
         width: {
+            if (osdWindow.isIsland) {
+                return osdWindow.islandStartW + (osdWindow.osdWidth - osdWindow.islandStartW) * animProgress;
+            }
             if (osdWindow.isAttached) {
                 if (osdWindow.isSideBar) {
                     return osdWindow.osdWidth * animProgress;
@@ -321,6 +342,9 @@ PanelWindow {
             return osdWindow.collapsedWidth + (osdWindow.osdWidth - osdWindow.collapsedWidth) * animProgress;
         }
         height: {
+            if (osdWindow.isIsland) {
+                return osdWindow.osdHeight;
+            }
             if (osdWindow.isAttached) {
                 if (!osdWindow.isSideBar) {
                     return osdWindow.osdHeight * animProgress;
@@ -332,7 +356,8 @@ PanelWindow {
             }
             return osdWindow.osdHeight;
         }
-        opacity: osdWindow.isAttached ? ((osdWindow.isVisible || animProgress > 0.001) ? 1.0 : 0.0) : Math.max(0.0, Math.min(1.0, animProgress * 1.5))
+        opacity: osdWindow.isIsland ? Math.min(1.0, animProgress * 4)
+               : osdWindow.isAttached ? ((osdWindow.isVisible || animProgress > 0.001) ? 1.0 : 0.0) : Math.max(0.0, Math.min(1.0, animProgress * 1.5))
 
         transformOrigin: {
             if (osdWindow.isAttached) {
@@ -376,7 +401,7 @@ PanelWindow {
                 }
                 return osdWindow.isBottomBar ? 3.0 : 1.0;
             }
-            property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            property color color: osdWindow.isIsland ? ThemeBackend.base : Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
             fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
         }
 
@@ -403,13 +428,14 @@ PanelWindow {
                 }
                 return osdWindow.isBottomBar ? 2.0 : 0.0;
             }
-            property color color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            property color color: osdWindow.isIsland ? ThemeBackend.base : Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
             fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
         }
         Rectangle {
             id: osdBox
             anchors.fill: parent
-            color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+            // Opaque like the bulges as an island, otherwise the workspaces shine through
+            color: osdWindow.isIsland ? ThemeBackend.base : Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
             radius: osdWindow.cornerRadius
             readonly property bool flatTop: osdWindow.isAttached && !osdWindow.isSideBar && !osdWindow.isBottomBar
             readonly property bool flatBottom: osdWindow.isAttached && !osdWindow.isSideBar && osdWindow.isBottomBar
@@ -623,7 +649,7 @@ PanelWindow {
 
                     IconButton {
                         anchors.centerIn: parent
-                        size: osdWindow.s(30)
+                        size: osdWindow.isIsland ? osdWindow.s(24) : osdWindow.s(30)
                         cornerRadius: osdWindow.s(8)
                         buttonIcon: {
                             if (osdWindow.kind === "volume") {

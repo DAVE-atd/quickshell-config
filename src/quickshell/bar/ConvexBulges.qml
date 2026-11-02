@@ -25,6 +25,11 @@ Item {
     readonly property string cutout: "file://" + Caching.serpantinumDir + "/assets/shaders/ui/corner_cutout.frag.qsb"
 
     readonly property string screenName: barWindow && barWindow.screen ? (barWindow.screen.name || "") : ""
+    readonly property real centerW: bar.cWidthTarget > 0 ? bar.cWidthTarget + 2 * pad : 0
+    onCenterWChanged: ConvexState.setCenterW(screenName, centerW)
+    onScreenNameChanged: ConvexState.setCenterW(screenName, centerW)
+    Component.onCompleted: ConvexState.setCenterW(screenName, centerW)
+
     readonly property bool popupAttached: ConvexState.active && ConvexState.screenName === screenName
         && (atBottom ? ConvexState.squareBottom : ConvexState.squareTop)
 
