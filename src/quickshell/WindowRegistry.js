@@ -69,7 +69,7 @@ function getLayout(name, mx, my, mw, mh, userScale, barPosition) {
 
     let base = {
         "network": { 
-            w: 720, h: 600, comp: "network/NetworkPopup.qml", 
+            w: 400, h: 560, comp: "network/WifiPanel.qml", 
             pos: { 
                 "top": { anchor: "top-right", mt: 52, mr: 4 }, 
                 "bottom": { anchor: "bottom-right", mb: 52, mr: 4 }, 

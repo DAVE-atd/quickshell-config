@@ -278,8 +278,6 @@ PanelWindow {
         }
         return best;
     }
-    // Popups that keep their own width instead of matching their bar section
-    readonly property var convexOwnWidth: ["network"]
     // Position (and width) of an attached popup of size w x h (also used when the popup changes its own size).
     // Dropdowns are at least as wide as their bar section and flush with it, like the bar part pulled down.
     function convexPlace(name, w, h, mw, mh, fallbackX) {
@@ -293,7 +291,7 @@ PanelWindow {
         }
         let x = fallbackX;
         let o = convexOriginFor(name);
-        if (o && convexOwnWidth.indexOf(name) === -1) {
+        if (o) {
             w = Math.max(w, o.x1 - o.x0);
             let atLeft = o.x0 <= t + 0.5, atRight = o.x1 >= mw - t - 0.5;
             x = atRight ? o.x1 - w : (atLeft ? o.x0 : Math.round((o.x0 + o.x1 - w) / 2));
@@ -672,6 +670,9 @@ PanelWindow {
 
     onTargetLayoutChanged: {
         if (!targetLayout || masterWindow.currentActive === "hidden" || !masterWindow.isVisible) return;
+        // When the layer window is mapped again it briefly reports width 0: a layout computed from that
+        // (x at the left edge) would otherwise fly to the real place once the morph is enabled
+        if (masterWindow.width < 10 || masterWindow.height < 10) return;
         if (!masterWindow.userMoved || !masterWindow.isCurrentDraggable) {
             masterWindow._animX = targetLayout.x;
             masterWindow._animY = targetLayout.y;
