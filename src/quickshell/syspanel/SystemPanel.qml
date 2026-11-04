@@ -29,9 +29,6 @@ Item {
         return "top";
     }
 
-    readonly property bool isLeftAnchored: barPosition === "right"
-    readonly property real slideDistance: sidebarPanel.width > 0 ? sidebarPanel.width : root.s(420)
-    readonly property real rowSlideDistance: root.s(36)
 
     readonly property bool isDesktop: UPower.displayDevice.ready ? !UPower.displayDevice.isLaptopBattery : SystemInfo.isDesktop
 
@@ -113,8 +110,6 @@ Item {
     property bool btStateBeforeAirplane: false
     property bool wifiStateBeforeAirplane: true
 
-    property bool canHibernate: false
-
     readonly property color batColorFlat: {
         if (!UPower.displayDevice.ready) return ThemeBackend.blue;
         if (isCharging) return ThemeBackend.green;
@@ -146,43 +141,12 @@ Item {
         }
     }
 
-    Process {
-        id: hibernateCheck
-        running: false
-        command: ["bash", Caching.serpantinumDir + "/scripts/system/can_hibernate.sh"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let out = this.text.trim();
-                root.canHibernate = (out === "yes");
-            }
-        }
-    }
-
-    property real introContent: 0.0
-    property real introTop: 0.0
-    property real introSliders: 0.0
-    property real introQuickActions: 0.0
-    property real introNotifs: 0.0
-    property real introActions: 0.0
-    property real introCore: 0.0
-
-    function resetAndPlayIntro() {
-        introContent = 0.0;
-        introTop = 0.0;
-        introSliders = 0.0;
-        introQuickActions = 0.0;
-        introNotifs = 0.0;
-        introActions = 0.0;
-        introCore = 0.0;
-        closeSequence.stop();
-        startupSequence.restart();
-    }
+    // Height of the drawer = its content (Main.qml reads drawerHeight)
+    readonly property real drawerHeight: panelColumn.implicitHeight + root.s(16)
 
     onVisibleChanged: {
-        NotificationManager.sysPanelOpen = visible;
         if (visible) {
             forceActiveFocus();
-            resetAndPlayIntro();
 
             animCapacity = batCapacity;
 
@@ -202,18 +166,14 @@ Item {
         } else {
             briPollerTimer.stop();
             briPoller.running = false;
-            startupSequence.stop();
             closeSequence.stop();
         }
     }
 
     Component.onCompleted: {
-        hibernateCheck.running = true;
         if (visible) {
-            NotificationManager.sysPanelOpen = true;
             if (quickActionsBox.nightLight) quickActionsBox.nightLight.updateState();
             if (quickActionsBox.coffee) quickActionsBox.coffee.updateState();
-            resetAndPlayIntro();
             forceActiveFocus();
             briPollerTimer.interval = 150;
             briPollerTimer.restart();
@@ -222,7 +182,6 @@ Item {
     }
 
     Component.onDestruction: {
-        NotificationManager.sysPanelOpen = false;
         briPollerTimer.stop();
     }
 
@@ -262,54 +221,19 @@ Item {
         }
     }
 
-    ParallelAnimation {
-        id: startupSequence
-        NumberAnimation { target: root; property: "introContent"; to: 1.0; duration: Motion.normal; easing.type: Easing.OutCubic }
-        NumberAnimation { target: root; property: "introTop"; from: 0; to: 1.0; duration: Motion.normal; easing.type: Easing.OutCubic }
-
-        SequentialAnimation {
-            PauseAnimation { duration: 30 }
-            NumberAnimation { target: root; property: "introSliders"; from: 0; to: 1.0; duration: Motion.normal; easing.type: Easing.OutCubic }
-        }
-        SequentialAnimation {
-            PauseAnimation { duration: 55 }
-            NumberAnimation { target: root; property: "introQuickActions"; from: 0; to: 1.0; duration: Motion.normal; easing.type: Easing.OutCubic }
-        }
-        SequentialAnimation {
-            PauseAnimation { duration: 80 }
-            NumberAnimation { target: root; property: "introNotifs"; from: 0; to: 1.0; duration: 330; easing.type: Easing.OutCubic }
-        }
-        SequentialAnimation {
-            PauseAnimation { duration: 105 }
-            NumberAnimation { target: root; property: "introActions"; from: 0; to: 1.0; duration: 330; easing.type: Easing.OutCubic }
-        }
-        SequentialAnimation {
-            PauseAnimation { duration: 130 }
-            NumberAnimation { target: root; property: "introCore"; from: 0; to: 1.0; duration: 340; easing.type: Easing.OutCubic }
-        }
-    }
-
     property alias closeAnim: closeSequence
 
     property var exitCallback: null
 
     function startExit(onFinished) {
-        startupSequence.stop();
         exitCallback = onFinished;
         closeSequence.restart();
     }
 
     SequentialAnimation {
         id: closeSequence
-        ParallelAnimation {
-            NumberAnimation { target: root; property: "introContent"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
-            NumberAnimation { target: root; property: "introTop"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
-            NumberAnimation { target: root; property: "introSliders"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
-            NumberAnimation { target: root; property: "introQuickActions"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
-            NumberAnimation { target: root; property: "introNotifs"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
-            NumberAnimation { target: root; property: "introActions"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
-            NumberAnimation { target: root; property: "introCore"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
-        }
+        // The drawer slides back in Main.qml (contentStage.tuck); wait for it
+        PauseAnimation { duration: Motion.close }
         ScriptAction {
             script: {
                 if (root.exitCallback) {
@@ -403,14 +327,14 @@ Item {
     Rectangle {
         id: sidebarPanel
         anchors.fill: parent
-        color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
+        // Convex: solid like the frame it hangs from
+        color: ConvexState.active ? ThemeBackend.base : Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
         radius: Math.min(ThemeBackend.borderRadius, root.s(28))
-        topLeftRadius: root.isLeftAnchored ? 0 : ConvexState.tl(radius)
-        bottomLeftRadius: root.isLeftAnchored ? 0 : ConvexState.bl(radius)
-        topRightRadius: root.isLeftAnchored ? ConvexState.tr(radius) : 0
-        bottomRightRadius: root.isLeftAnchored ? ConvexState.br(radius) : 0
+        topLeftRadius: ConvexState.tl(radius)
+        bottomLeftRadius: ConvexState.bl(radius)
+        topRightRadius: ConvexState.tr(radius)
+        bottomRightRadius: ConvexState.br(radius)
         clip: true
-        opacity: root.introContent
 
         WallpaperBlur {
             z: -1
@@ -420,112 +344,17 @@ Item {
             bottomLeftRadius: parent.bottomLeftRadius
             bottomRightRadius: parent.bottomRightRadius
         }
-        transform: Translate { x: (root.isLeftAnchored ? -root.slideDistance : root.slideDistance) * (1.0 - root.introContent) }
 
         Item {
             anchors.fill: parent
 
             ColumnLayout {
-                anchors.fill: parent
+                id: panelColumn
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
                 anchors.margins: root.s(8)
                 spacing: root.s(5)
-
-                Rectangle {
-                    id: userBox
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: root.s(54)
-                    Layout.maximumHeight: root.s(54)
-                    radius: root.boxRadius
-                    color: userGlass.active ? "transparent" : ThemeBackend.faded(Qt.darker(ThemeBackend.surface0, 1.04))
-                    opacity: root.introTop
-                    transform: Translate { x: (root.isLeftAnchored ? -root.rowSlideDistance : root.rowSlideDistance) * (1.0 - root.introTop) }
-
-                    GlassFill {
-                        id: userGlass
-                        anchors.fill: parent
-                        radius: parent.radius
-                        tintColor: ThemeBackend.surface0
-                        tintAmount: 0.3
-                    }
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: root.s(10)
-                        spacing: root.s(10)
-
-                        ImageBox {
-                            Layout.alignment: Qt.AlignTop
-                            Layout.preferredWidth: root.s(34)
-                            Layout.preferredHeight: root.s(34)
-                            size: root.s(34)
-                            cornerRadius: root.s(8)
-                            imageRadius: root.s(8)
-                            source: SystemInfo.avatarPath !== "" ? "file://" + SystemInfo.avatarPath : ""
-                            backgroundColor: SystemInfo.avatarPath === "" ? ThemeBackend.surface1 : "transparent"
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: ""
-                                font.family: ThemeBackend.iconFont
-                                font.pixelSize: root.s(18)
-                                color: ThemeBackend.text
-                                visible: SystemInfo.avatarPath === ""
-                            }
-                        }
-
-                        ColumnLayout {
-                            Layout.alignment: Qt.AlignTop
-                            spacing: 0
-
-                            Text {
-                                text: SystemInfo.username !== "" ? SystemInfo.username : I18n.t("syspanel.user.default_name")
-                                font.family: ThemeBackend.fontFamily
-                                font.weight: Font.Black
-                                font.pixelSize: root.s(15)
-                                color: ThemeBackend.text
-                            }
-
-                            Text {
-                                text: SystemInfo.osName !== "" ? SystemInfo.osName : I18n.t("syspanel.user.default_os")
-                                font.family: ThemeBackend.fontFamily
-                                font.weight: Font.Medium
-                                font.pixelSize: root.s(10)
-                                color: ThemeBackend.subtext0
-                            }
-                        }
-
-                        Item { Layout.fillWidth: true }
-
-                        ClickButton {
-                            id: logoutBtn
-                            Layout.alignment: Qt.AlignTop | Qt.AlignRight
-                            Layout.preferredWidth: root.s(92)
-                            Layout.preferredHeight: root.s(34)
-                            horizontalPadding: root.s(10)
-                            cornerRadius: root.s(12)
-                            buttonText: I18n.t("syspanel.user.logout")
-                            textFontSize: root.s(11)
-                            buttonIcon: "󰍃"
-                            iconFontSize: root.s(14)
-                            accentColor: ThemeBackend.surface2
-                            textColor: ThemeBackend.text
-
-                            Timer {
-                                id: logoutOpenTimer
-                                interval: 150
-                                onTriggered: {
-                                    closeSequence.start();
-                                    Quickshell.execDetached(["bash", Caching.serpantinumDir + "/scripts/system/exit.sh"]);
-                                    Quickshell.execDetached(["sh", "-c", "echo 'close' > " + Caching.runDir + "/widget_state"]);
-                                }
-                            }
-
-                            onTriggered: {
-                                logoutOpenTimer.start();
-                            }
-                        }
-                    }
-                }
 
                 SystemPanelSliders {
                     id: slidersBox
@@ -537,23 +366,6 @@ Item {
                     panel: root
                 }
 
-                NotificationBox {
-                    id: notifsBox
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.minimumHeight: root.s(68)
-                    cornerRadius: root.boxRadius
-                    cardRadius: root.cardRadius
-                    baseColor: ThemeBackend.faded(Qt.darker(ThemeBackend.surface0, 1.04))
-                    rootContext: root
-                    opacity: root.introNotifs
-                    transform: Translate { x: (root.isLeftAnchored ? -root.rowSlideDistance : root.rowSlideDistance) * (1.0 - root.introNotifs) }
-                }
-
-                SystemPanelPowerActions {
-                    panel: root
-                }
-
                 Rectangle {
                     id: batteryBox
                     Layout.fillWidth: true
@@ -562,8 +374,6 @@ Item {
                     radius: root.isDesktop ? root.s(15) : root.boxRadius
                     color: (root.isDesktop || batteryGlass.active) ? "transparent" : ThemeBackend.faded(Qt.darker(ThemeBackend.surface0, 1.04))
                     clip: true
-                    opacity: root.introCore
-                    transform: Translate { x: (root.isLeftAnchored ? -root.rowSlideDistance : root.rowSlideDistance) * (1.0 - root.introCore) }
 
                     property real fillLevel: root.animCapacity / 100
                     property real maxWaveAmp: root.isCharging ? root.s(10) : root.s(6.5)

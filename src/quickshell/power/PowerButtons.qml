@@ -8,25 +8,38 @@ import Quickshell.Services.Pipewire
 import "../"
 import "../reusables"
 
+// Fünf Knöpfe zum Gedrückthalten: der Knopf füllt sich von unten nach oben, voll = Aktion,
+// früh loslassen lässt ihn wieder leerlaufen. Aus dem alten System-Panel, jetzt in power/PowerMenu.qml.
+// Tastatur: panel.focusIndex markiert einen Knopf, holdAt()/releaseAt() wirken wie die Maus.
 RowLayout {
+    id: buttonsRow
     required property var panel
 
-    Layout.fillWidth: true
-    Layout.preferredHeight: panel.s(73)
-    Layout.maximumHeight: panel.s(73)
-    spacing: panel.s(6)
+    function holdAt(i) { let c = buttonsRepeater.itemAt(i); if (c) { c.keyHeld = true; c.startHold(); } }
+    function releaseAt(i) { let c = buttonsRepeater.itemAt(i); if (c) c.releaseHold(); }
+
+    spacing: panel.s(5)
 
     Repeater {
+        id: buttonsRepeater
         model: ListModel {
             ListElement { cmd: "lock"; icon: ""; weight: 1.0 }
             ListElement { cmd: "sleep"; icon: "ᶻ 𝗓 𝗓"; weight: 1.0 }
             ListElement { cmd: "hibernate"; icon: "󰤄"; weight: 1.5 }
+            ListElement { cmd: "logout"; icon: "󰍃"; weight: 2.0 }
             ListElement { cmd: "reboot"; icon: "󰑓"; weight: 2.5 }
             ListElement { cmd: "poweroff"; icon: ""; weight: 3.5 }
         }
 
         delegate: Rectangle {
             id: actionCapsule
+            required property int index
+            required property string cmd
+            required property string icon
+            required property real weight
+            readonly property bool hovered: actionMa.containsMouse || panel.focusIndex === index
+            readonly property bool held: actionMa.pressed || keyHeld
+            property bool keyHeld: false
             Layout.fillWidth: true
             Layout.fillHeight: true
             radius: panel.boxRadius
@@ -37,21 +50,17 @@ RowLayout {
             property bool showError: false
             property int chargingSoundHandle: -1
 
-            opacity: panel.introActions
-            transform: [
-                Translate { id: shakeTranslate; x: 0 },
-                Translate { x: (panel.isLeftAnchored ? -panel.rowSlideDistance : panel.rowSlideDistance) * (1.0 - panel.introActions) }
-            ]
+            transform: Translate { id: shakeTranslate; x: 0 }
 
-            color: capsuleGlass.active ? "transparent" : ThemeBackend.faded((actionMa.containsMouse && !isDisabled) ? ThemeBackend.surface1 : Qt.darker(ThemeBackend.surface0, 1.04))
+            color: capsuleGlass.active ? "transparent" : ThemeBackend.faded((actionCapsule.hovered && !isDisabled) ? ThemeBackend.surface1 : Qt.darker(ThemeBackend.surface0, 1.04))
 
             GlassFill {
                 id: capsuleGlass
                 anchors.fill: parent
                 radius: parent.radius
-                tintColor: (actionMa.containsMouse && !isDisabled) ? ThemeBackend.surface1 : ThemeBackend.surface0
+                tintColor: (actionCapsule.hovered && !isDisabled) ? ThemeBackend.surface1 : ThemeBackend.surface0
                 tintAmount: 0.3
-                press: (actionMa.pressed && !isDisabled) ? 0.6 + 0.4 * actionCapsule.fillLevel : ((actionMa.containsMouse && !isDisabled) ? 0.25 : 0)
+                press: (actionCapsule.held && !isDisabled) ? 0.6 + 0.4 * actionCapsule.fillLevel : ((actionCapsule.hovered && !isDisabled) ? 0.25 : 0)
                 pulse: Math.min(1, actionCapsule.flashOpacity * 2.5)
                 Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
             }
@@ -60,7 +69,7 @@ RowLayout {
                 ColorAnimation { duration: Motion.normal }
             }
 
-            scale: (actionMa.pressed && !isDisabled) ? (0.98 - (0.01 * weight)) : ((actionMa.containsMouse && !isDisabled) ? 1.02 : 1.0)
+            scale: (actionCapsule.held && !isDisabled) ? (0.98 - (0.01 * weight)) : ((actionCapsule.hovered && !isDisabled) ? 1.02 : 1.0)
             Behavior on scale {
                 enabled: panel.visible
                 NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutQuart }
@@ -71,8 +80,9 @@ RowLayout {
             property real flashOpacity: 0.0
 
             Connections {
-                target: root
+                target: panel
                 function onVisibleChanged() {
+                    actionCapsule.keyHeld = false;
                     if (actionCapsule.chargingSoundHandle !== -1 && typeof Sounds !== "undefined") {
                         Sounds.stopSfx(actionCapsule.chargingSoundHandle);
                         actionCapsule.chargingSoundHandle = -1;
@@ -162,8 +172,8 @@ RowLayout {
             Text {
                 anchors.centerIn: parent
                 font.family: ThemeBackend.iconFont
-                font.pixelSize: panel.s(19)
-                color: isDisabled ? ThemeBackend.surface2 : (actionMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
+                font.pixelSize: panel.s(16)
+                color: isDisabled ? ThemeBackend.surface2 : (actionCapsule.hovered ? ThemeBackend.text : ThemeBackend.subtext0)
                 text: icon
                 Behavior on color {
                     enabled: panel.visible
@@ -180,7 +190,7 @@ RowLayout {
                     anchors.horizontalCenter: parent.horizontalCenter
                     y: (actionCapsule.height / 2) - (height / 2) - (actionCapsule.height - parent.height)
                     font.family: ThemeBackend.iconFont
-                    font.pixelSize: panel.s(19)
+                    font.pixelSize: panel.s(16)
                     color: capsuleGlass.active ? ThemeBackend.text : ThemeBackend.crust
                     text: icon
                 }
@@ -192,48 +202,44 @@ RowLayout {
                 hoverEnabled: true
                 cursorShape: isDisabled ? Qt.ForbiddenCursor : (actionCapsule.triggered ? Qt.ArrowCursor : Qt.PointingHandCursor)
 
-                onPressed: {
-                    if (isDisabled) {
-                        actionCapsule.triggerError();
-                        Quickshell.execDetached([
-                            "notify-send",
-                            "-a", I18n.t("syspanel.actions.system_name"),
-                            "-u", "normal",
-                            "-i", "dialog-warning",
-                            I18n.t("syspanel.actions.hibernate_error_title"),
-                            I18n.t("syspanel.actions.hibernate_error_body")
-                        ]);
-                    } else if (!actionCapsule.triggered) {
-                        if (actionCapsule.chargingSoundHandle !== -1 && typeof Sounds !== "undefined") {
-                            Sounds.stopSfx(actionCapsule.chargingSoundHandle);
-                            actionCapsule.chargingSoundHandle = -1;
-                        }
-                        if (typeof Sounds !== "undefined") {
-                            actionCapsule.chargingSoundHandle = Sounds.playUntilStopped("reusables/fillbutton/charge_loop.wav", 0.6, false);
-                        }
-                        drainAnim.stop();
-                        fillAnim.start();
+                onPressed: actionCapsule.startHold()
+                onReleased: actionCapsule.releaseHold()
+                onCanceled: actionCapsule.releaseHold()
+            }
+
+            function startHold() {
+                if (isDisabled) {
+                    actionCapsule.triggerError();
+                    Quickshell.execDetached([
+                        "notify-send",
+                        "-a", I18n.t("syspanel.actions.system_name"),
+                        "-u", "normal",
+                        "-i", "dialog-warning",
+                        I18n.t("syspanel.actions.hibernate_error_title"),
+                        I18n.t("syspanel.actions.hibernate_error_body")
+                    ]);
+                } else if (!actionCapsule.triggered) {
+                    if (actionCapsule.chargingSoundHandle !== -1 && typeof Sounds !== "undefined") {
+                        Sounds.stopSfx(actionCapsule.chargingSoundHandle);
+                        actionCapsule.chargingSoundHandle = -1;
                     }
+                    if (typeof Sounds !== "undefined") {
+                        actionCapsule.chargingSoundHandle = Sounds.playUntilStopped("reusables/fillbutton/charge_loop.wav", 0.6, false);
+                    }
+                    drainAnim.stop();
+                    fillAnim.start();
                 }
-                onReleased: {
-                    if (!isDisabled && !actionCapsule.triggered && actionCapsule.fillLevel < 1.0) {
-                        if (actionCapsule.chargingSoundHandle !== -1 && typeof Sounds !== "undefined") {
-                            Sounds.stopSfx(actionCapsule.chargingSoundHandle);
-                            actionCapsule.chargingSoundHandle = -1;
-                        }
-                        fillAnim.stop();
-                        drainAnim.start();
+            }
+
+            function releaseHold() {
+                actionCapsule.keyHeld = false;
+                if (!isDisabled && !actionCapsule.triggered && actionCapsule.fillLevel < 1.0) {
+                    if (actionCapsule.chargingSoundHandle !== -1 && typeof Sounds !== "undefined") {
+                        Sounds.stopSfx(actionCapsule.chargingSoundHandle);
+                        actionCapsule.chargingSoundHandle = -1;
                     }
-                }
-                onCanceled: {
-                    if (!isDisabled && !actionCapsule.triggered) {
-                        if (actionCapsule.chargingSoundHandle !== -1 && typeof Sounds !== "undefined") {
-                            Sounds.stopSfx(actionCapsule.chargingSoundHandle);
-                            actionCapsule.chargingSoundHandle = -1;
-                        }
-                        fillAnim.stop();
-                        drainAnim.start();
-                    }
+                    fillAnim.stop();
+                    drainAnim.start();
                 }
             }
 
@@ -269,7 +275,9 @@ RowLayout {
                         Sounds.stopSfx(actionCapsule.chargingSoundHandle);
                         actionCapsule.chargingSoundHandle = -1;
                     }
-                    let scriptPath = cmd === "lock" ? Caching.serpantinumDir + "/scripts/lock.sh" : Caching.serpantinumDir + "/scripts/system/" + (cmd === "sleep" ? "suspend.sh" : cmd + ".sh");
+                    // logout = exit.sh (in nixos-config gepatcht, damit es die Session sauber beendet)
+                    let scriptPath = cmd === "lock" ? Caching.serpantinumDir + "/scripts/lock.sh"
+                        : Caching.serpantinumDir + "/scripts/system/" + (cmd === "sleep" ? "suspend.sh" : cmd === "logout" ? "exit.sh" : cmd + ".sh");
                     Quickshell.execDetached(["bash", scriptPath]);
                     Quickshell.execDetached(["sh", "-c", "echo 'close' > " + Caching.runDir + "/widget_state"]);
 

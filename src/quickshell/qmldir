@@ -50,6 +50,7 @@ singleton Config 1.0 singletons/system/Config.qml
 singleton CurrentFocus 1.0 singletons/system/CurrentFocus.qml
 singleton DateTime 1.0 singletons/system/DateTime.qml
 singleton FirstLaunch 1.0 singletons/system/FirstLaunch.qml
+singleton GameMode 1.0 singletons/system/GameMode.qml
 singleton I18n 1.0 singletons/system/I18n.qml
 singleton KeyboardLayout 1.0 singletons/system/KeyboardLayout.qml
 singleton MangoState 1.0 singletons/system/MangoState.qml

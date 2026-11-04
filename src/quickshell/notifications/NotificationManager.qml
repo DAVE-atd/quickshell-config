@@ -10,6 +10,8 @@ Item {
     property int popupCounter: 0
     property bool isStartup: true
     property bool sysPanelOpen: false
+    // Unread notifications in the history (bell in the bar, notification drawer header)
+    property int unreadCount: 0
     property real lastNotifTime: 0
     property bool _isBatchUpdating: false
 
@@ -97,6 +99,18 @@ Item {
         if (changed) rebuildGroups();
     }
 
+    function markAllRead() {
+        let changed = false;
+        for (let i = 0; i < historyModel.count; i++) {
+            let nData = historyModel.get(i);
+            if (nData && !nData.read) {
+                historyModel.setProperty(i, "read", true);
+                changed = true;
+            }
+        }
+        if (changed) rebuildGroups();
+    }
+
     function markAsRead(uid) {
         let changed = false;
         for (let i = 0; i < historyModel.count; i++) {
@@ -113,6 +127,12 @@ Item {
     function rebuildGroups() {
         let groupedMap = {};
         let newOrder = [];
+        let unread = 0;
+        for (let i = 0; i < historyModel.count; i++) {
+            let nData = historyModel.get(i);
+            if (nData && !nData.read) unread++;
+        }
+        root.unreadCount = unread;
 
         for (let i = 0; i < historyModel.count; i++) {
             let nData = historyModel.get(i);

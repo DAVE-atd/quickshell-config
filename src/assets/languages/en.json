@@ -1402,7 +1402,9 @@
       "clear": "Clear",
       "silent": "Silent",
       "mute": "Mute",
-      "empty": "You're all caught up."
+      "empty": "You're all caught up.",
+      "count_new": "{count} new",
+      "caught_up": "All caught up"
     },
     "profiles": {
       "performance": "Performance",

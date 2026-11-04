@@ -1422,7 +1422,9 @@
       "clear": "Löschen",
       "silent": "Lautlos",
       "mute": "Stummschalten",
-      "empty": "Keine neuen Benachrichtigungen."
+      "empty": "Keine neuen Benachrichtigungen.",
+      "count_new": "{count} neu",
+      "caught_up": "Alles erledigt"
     },
     "profiles": {
       "performance": "Leistung",

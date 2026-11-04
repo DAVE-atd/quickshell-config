@@ -33,8 +33,6 @@ Rectangle {
     Layout.maximumHeight: slidersCol.implicitHeight + panel.s(20)
     radius: panel.boxRadius
     color: slidersGlass.active ? "transparent" : ThemeBackend.faded(Qt.darker(ThemeBackend.surface0, 1.04))
-    opacity: panel.introSliders
-    transform: Translate { x: (panel.isLeftAnchored ? -panel.rowSlideDistance : panel.rowSlideDistance) * (1.0 - panel.introSliders) }
 
     GlassFill {
         id: slidersGlass

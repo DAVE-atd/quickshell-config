@@ -197,6 +197,18 @@ QtObject {
             defaultVariant: "default",
             face: "faces/tailscale/TailscaleFace.qml"
         },
+        "notif": {
+            name: "Notifications",
+            icon: "󰂚",
+            defaultVariant: "default",
+            face: "faces/notif/NotifFace.qml"
+        },
+        "power": {
+            name: "Power",
+            icon: "󰐥",
+            defaultVariant: "default",
+            face: "faces/power/PowerFace.qml"
+        },
         "bt": {
             name: typeof I18n !== "undefined" ? I18n.t("guide.bar.modules.bluetooth", "Bluetooth") : "Bluetooth",
             icon: "󰂲",

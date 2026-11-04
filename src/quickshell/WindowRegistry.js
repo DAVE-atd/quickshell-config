@@ -149,23 +149,35 @@ function getLayout(name, mx, my, mw, mh, userScale, barPosition) {
                 "right": { anchor: "top-right", mt: 5, mr: 52 } 
             } 
         },
-        "notifications": { 
-            w: 500, h: "fill", comp: "notifications/NotificationCenter.qml", 
-            pos: { 
-                "top": { anchor: "left" }, 
-                "bottom": { anchor: "left" }, 
-                "left": { anchor: "left" }, 
-                "right": { anchor: "left" } 
-            } 
+        // System + Notifications: drawers from the right frame edge (Main.qml convexPlace);
+        // the System panel sets its own height (targetMasterHeight)
+        "notifications": {
+            w: 420, h: 680, comp: "notifications/NotificationCenter.qml",
+            pos: {
+                "top": { anchor: "right", mr: 8 },
+                "bottom": { anchor: "right", mr: 8 },
+                "left": { anchor: "right", mr: 8 },
+                "right": { anchor: "left", ml: 8 }
+            }
         },
-        "system": { 
-            w: 500, h: "fill", comp: "syspanel/SystemPanel.qml", 
-            pos: { 
-                "top": { anchor: "right" }, 
-                "bottom": { anchor: "right" }, 
-                "left": { anchor: "right" }, 
-                "right": { anchor: "left" } 
-            } 
+        "system": {
+            w: 420, h: 600, comp: "syspanel/SystemPanel.qml",
+            pos: {
+                "top": { anchor: "right", mr: 8 },
+                "bottom": { anchor: "right", mr: 8 },
+                "left": { anchor: "right", mr: 8 },
+                "right": { anchor: "left", ml: 8 }
+            }
+        },
+        // Power menu: drawer from the bottom frame edge (Ctrl+Alt+Del, bar module "power")
+        "power": {
+            w: 400, h: 84, comp: "power/PowerMenu.qml",
+            pos: {
+                "top": { anchor: "bottom-center", mb: 8 },
+                "bottom": { anchor: "bottom-center", mb: 8 },
+                "left": { anchor: "bottom-center", mb: 8 },
+                "right": { anchor: "bottom-center", mb: 8 }
+            }
         },
         "hidden": { 
             w: 1, h: 1, comp: "", 

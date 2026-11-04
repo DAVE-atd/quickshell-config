@@ -97,8 +97,6 @@ Item {
     Layout.fillWidth: true
     Layout.preferredHeight: view.panel.s(73)
     Layout.maximumHeight: view.panel.s(73)
-    opacity: view.panel.introQuickActions
-    transform: Translate { x: (view.panel.isLeftAnchored ? -view.panel.rowSlideDistance : view.panel.rowSlideDistance) * (1.0 - view.panel.introQuickActions) }
 
     RowLayout {
         anchors.fill: parent
@@ -344,6 +342,17 @@ Item {
             onRightClicked: {
                 view.panel.closeAnim.start();
                 Quickshell.execDetached(["bash", Caching.serpantinumDir + "/scripts/qs_manager.sh", "toggle", "network", "bt"]);
+            }
+        }
+
+        // Game Mode (singletons/system/GameMode.qml): Hyprland effects off, Performance profile
+        QuickActionBtn {
+            iconText: "󰊴"
+            activeColor: ThemeBackend.green
+            isActive: GameMode.active
+            onLeftClicked: {
+                Sounds.playSfx("system/quick_click.wav");
+                GameMode.toggle();
             }
         }
 

@@ -87,6 +87,13 @@ PanelWindow {
             NotificationManager.clearNotifications();
         }
 
+        // Game Mode (singletons/system/GameMode.qml): toggle / on / off
+        function gameMode(action: string): void {
+            if (action === "on") GameMode.enable();
+            else if (action === "off") GameMode.disable();
+            else GameMode.toggle();
+        }
+
         function embeddedSettings(action: string, tab: string): void {
             masterWindow.handleEmbeddedSettings(action || "toggle", tab || "");
         }
@@ -252,21 +259,26 @@ PanelWindow {
         if (isNaN(v)) v = 40;
         return Math.round(Scaler.s(Math.max(28, Math.min(48, v))));
     }
+    // Side drawers come out of the right frame edge, the power menu out of the bottom edge
+    readonly property var convexSideDrawers: ["system", "notifications"]
     function isConvexAttached(name) {
-        return isConvex && (convexDropdowns.indexOf(name) !== -1 || name === "notifications" || name === "system");
+        return isConvex && (convexDropdowns.indexOf(name) !== -1 || convexSideDrawers.indexOf(name) !== -1 || name === "power");
+    }
+    // Position of an attached popup of size w x h (also used when the popup changes its own size)
+    function convexPlace(name, w, h, mw, mh, fallbackX) {
+        let t = convexFrame, bh = convexBarH, top = barPosition === "top";
+        if (convexSideDrawers.indexOf(name) !== -1) {
+            let y0 = top ? bh : t, y1 = mh - (top ? t : bh);
+            return { x: mw - t - w, y: Math.round(y0 + Math.max(0, (y1 - y0 - h) / 2)) };
+        }
+        if (name === "power") {
+            return { x: Math.round((mw - w) / 2), y: mh - (top ? t : bh) - h };
+        }
+        return { x: Math.max(t, Math.min(mw - t - w, fallbackX)), y: top ? bh : (mh - bh - h) };
     }
     function convexLayout(name, r, mw, mh) {
-        let t = convexFrame, bh = convexBarH, top = barPosition === "top";
-        let out = { w: r.w, h: r.h, rx: r.rx, ry: r.ry, comp: r.comp, draggable: r.draggable };
-        if (name === "notifications" || name === "system") {
-            out.h = mh - bh - t;
-            out.ry = top ? bh : t;
-            out.rx = (name === "notifications") ? t : (mw - t - r.w);
-        } else {
-            out.ry = top ? bh : (mh - bh - r.h);
-            out.rx = Math.max(t, Math.min(mw - t - r.w, r.rx));
-        }
-        return out;
+        let p = convexPlace(name, r.w, r.h, mw, mh, r.rx);
+        return { w: r.w, h: r.h, rx: p.x, ry: p.y, comp: r.comp, draggable: r.draggable };
     }
 
     readonly property var convexInfo: {
@@ -314,30 +326,38 @@ PanelWindow {
             let barTop = masterWindow.barPosition === "top";
             let x0 = c.x, x1 = c.x + c.w, y0 = c.y, y1 = c.y + c.h;
             let out = [];
-            // cornerIndex = filled corner: 0 TL, 1 TR, 2 BL, 3 BR
+            // ax/ay = point where popup and frame edge meet, edge = frame edge of the join,
+            // c = filled corner of the quad: 0 TL, 1 TR, 2 BL, 3 BR
             if (c.left) {
-                if (!c.bottom) out.push({ x: t, y: y1, c: 0 });
-                if (!c.top) out.push({ x: t, y: y0 - r, c: 2 });
+                if (!c.bottom) out.push({ ax: t, ay: y1, c: 0, edge: "left" });
+                if (!c.top) out.push({ ax: t, ay: y0, c: 2, edge: "left" });
             }
             if (c.right) {
-                if (!c.bottom) out.push({ x: W - t - r, y: y1, c: 1 });
-                if (!c.top) out.push({ x: W - t - r, y: y0 - r, c: 3 });
+                if (!c.bottom) out.push({ ax: W - t, ay: y1, c: 1, edge: "right" });
+                if (!c.top) out.push({ ax: W - t, ay: y0, c: 3, edge: "right" });
             }
             if (c.bottom && barTop) {
-                if (!c.left) out.push({ x: x0 - r, y: H - t - r, c: 3 });
-                if (!c.right) out.push({ x: x1, y: H - t - r, c: 2 });
+                if (!c.left) out.push({ ax: x0, ay: H - t, c: 3, edge: "bottom" });
+                if (!c.right) out.push({ ax: x1, ay: H - t, c: 2, edge: "bottom" });
             }
             if (c.top && !barTop) {
-                if (!c.left) out.push({ x: x0 - r, y: t, c: 1 });
-                if (!c.right) out.push({ x: x1, y: t, c: 0 });
+                if (!c.left) out.push({ ax: x0, ay: t, c: 1, edge: "top" });
+                if (!c.right) out.push({ ax: x1, ay: t, c: 0, edge: "top" });
             }
             return out;
         }
         delegate: ShaderEffect {
             required property var modelData
-            x: modelData.x; y: modelData.y
-            width: masterWindow.convexRadius; height: width
-            opacity: contentStage.opacity
+            // Like minflair: a join on the edge the drawer slides out of is part of the drawer and
+            // grows with it (at most 35 % of the part that is out); other joins fade with the slide
+            readonly property bool grows: contentStage.isDrawer && modelData.edge === contentStage.tuckEdge
+            readonly property real outExtent: (1 - contentStage.tuck) * (contentStage.isSideDrawer ? contentStage.width : contentStage.height)
+            readonly property real size: grows ? Math.min(masterWindow.convexRadius, outExtent * 0.35) : masterWindow.convexRadius
+            x: (modelData.c === 1 || modelData.c === 3) ? modelData.ax - size : modelData.ax
+            y: (modelData.c === 2 || modelData.c === 3) ? modelData.ay - size : modelData.ay
+            width: size; height: size
+            visible: size >= 0.5
+            opacity: (contentStage.isDrawer && !grows) ? contentStage.opacity * Math.max(0, 1 - 4 * contentStage.tuck) : contentStage.opacity
             property real cornerIndex: modelData.c
             property vector2d itemSize: Qt.vector2d(width, height)
             property color color: ThemeBackend.base
@@ -549,7 +569,7 @@ PanelWindow {
         if (masterWindow.isConvexAttached(name)) return masterWindow.convexLayout(name, result, scrW, scrH);
 
         let scale = masterWindow.globalUiScale || 1.0;
-        let isFixed = (name === "guide" || name === "wallpaper" || name === "notifications" || name === "system" || name === "hidden");
+        let isFixed = (name === "guide" || name === "wallpaper" || name === "notifications" || name === "system" || name === "power" || name === "hidden");
 
         if (effHidden && !isFixed) {
             let offsetAdjustment = Math.round(46 * scale);
@@ -604,13 +624,19 @@ PanelWindow {
             if (typeof item.targetMasterHeight === "number" && !isNaN(item.targetMasterHeight) && item.targetMasterHeight >= 50) {
                 th = item.targetMasterHeight;
             }
+            // Drawers that size themselves to their content (binding, never written by Main)
+            if (typeof item.drawerHeight === "number" && !isNaN(item.drawerHeight) && item.drawerHeight >= 50) {
+                th = item.drawerHeight;
+            }
         }
 
         let x = (tw !== t.w) ? recenterX(t, tw) : t.rx;
-        if (convexDropdowns.indexOf(currentActive) !== -1 && isConvex) {
-            x = Math.max(convexFrame, Math.min(masterWindow.width - convexFrame - tw, x));
+        let y = t.ry;
+        if (isConvexAttached(currentActive)) {
+            let p = convexPlace(currentActive, tw, th, masterWindow.width, masterWindow.height, x);
+            x = p.x; y = p.y;
         }
-        return { x: x, y: t.ry, w: tw, h: th };
+        return { x: x, y: y, w: tw, h: th };
     }
 
     onTargetLayoutChanged: {
@@ -680,9 +706,14 @@ PanelWindow {
             y: (animContainer.height - height) / 2
             transformOrigin: ConvexState.origin
 
-            // Convex: dropdowns slide out of the bar like a drawer (clipped by animContainer).
-            // tuck 0 = out, 1 = pulled into the bar edge; starts closing as soon as isClosing is set.
-            readonly property bool isDrawer: masterWindow.isConvex && masterWindow.convexDropdowns.indexOf(masterWindow.currentActive) !== -1
+            // Convex: dropdowns slide out of the bar like a drawer (clipped by animContainer),
+            // System/Notifications out of the right frame edge, the power menu out of the bottom edge.
+            // tuck 0 = out, 1 = pulled into the edge; starts closing as soon as isClosing is set.
+            readonly property bool isSideDrawer: masterWindow.isConvex && masterWindow.convexSideDrawers.indexOf(masterWindow.currentActive) !== -1
+            readonly property bool isDrawer: masterWindow.isConvexAttached(masterWindow.currentActive)
+            readonly property bool tucksDown: masterWindow.currentActive === "power" || masterWindow.barPosition === "bottom"
+            // Frame edge the drawer slides out of
+            readonly property string tuckEdge: isSideDrawer ? "right" : (tucksDown ? "bottom" : "top")
             readonly property bool shown: masterWindow.isVisible && !masterWindow.isClosing
             property real tuck: shown ? 0 : 1
             Behavior on tuck {
@@ -692,7 +723,8 @@ PanelWindow {
                 }
             }
             transform: Translate {
-                y: contentStage.isDrawer ? contentStage.tuck * (masterWindow.barPosition === "bottom" ? contentStage.height : -contentStage.height) : 0
+                x: contentStage.isSideDrawer ? contentStage.tuck * contentStage.width : 0
+                y: (contentStage.isDrawer && !contentStage.isSideDrawer) ? contentStage.tuck * (contentStage.tucksDown ? contentStage.height : -contentStage.height) : 0
             }
             // The bar's bulge above the popup is there as long as the drawer is out at all
             readonly property real convexOpacity: (contentStage.isDrawer && tuck >= 0.999) ? 0 : opacity
@@ -718,6 +750,13 @@ PanelWindow {
             }
 
             MouseArea { anchors.fill: parent }
+
+            SequentialAnimation {
+                id: switchFade
+                PropertyAction { target: widgetStack; property: "opacity"; value: 0 }
+                PauseAnimation { duration: 40 }
+                NumberAnimation { target: widgetStack; property: "opacity"; to: 1; duration: Motion.fast; easing.type: Easing.OutCubic }
+            }
 
             StackView {
                 id: widgetStack
@@ -859,8 +898,13 @@ PanelWindow {
 
         let finalW = (typeof cachedItem.targetMasterWidth === "number" && cachedItem.targetMasterWidth >= 50) ? cachedItem.targetMasterWidth : t.w;
         let finalH = (typeof cachedItem.targetMasterHeight === "number" && cachedItem.targetMasterHeight >= 50) ? cachedItem.targetMasterHeight : t.h;
+        if (typeof cachedItem.drawerHeight === "number" && cachedItem.drawerHeight >= 50) finalH = cachedItem.drawerHeight;
         let finalX = (finalW !== t.w) ? recenterX(t, finalW) : t.rx;
         let finalY = t.ry;
+        if (isConvexAttached(newWidget)) {
+            let p = convexPlace(newWidget, finalW, finalH, masterWindow.width, masterWindow.height, finalX);
+            finalX = p.x; finalY = p.y;
+        }
 
         if (!masterWindow.userMoved || !masterWindow.isCurrentDraggable) {
             masterWindow._animX = finalX;
@@ -876,6 +920,8 @@ PanelWindow {
         } else {
             masterWindow.morphDuration = masterWindow.morphDurationSwitch;
             masterWindow.disableMorph = false;
+            // Like minflair: the new content fades in while the size morphs
+            if (widgetStack.currentItem !== cachedItem) switchFade.restart();
         }
 
         if (newWidget === "wallpaper" && cachedItem.widgetArg !== undefined) cachedItem.widgetArg = arg;

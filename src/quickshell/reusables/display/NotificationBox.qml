@@ -30,6 +30,9 @@ Item {
     property real emptyGraphicSize: root.s(148)
     property real contentMargins: root.s(12)
     property string titleText: I18n.t("syspanel.notifications.title")
+    // Optional second line under the title (notification drawer: "3 new" / "All caught up")
+    property string subtitleText: ""
+    property real titleSize: root.s(12)
 
     property bool dndEnabled: Boolean(Config.rawSettings && Config.rawSettings.notifications && Config.rawSettings.notifications.dnd)
     readonly property bool showEmptyGraphic: (Config.rawSettings && Config.rawSettings.notifications && Config.rawSettings.notifications.showEmptyGraphic !== undefined) ? Boolean(Config.rawSettings.notifications.showEmptyGraphic) : true
@@ -172,16 +175,30 @@ Item {
             Layout.fillWidth: true
             spacing: root.s(8)
 
-            Text {
+            ColumnLayout {
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: !I18n.rtl ? root.s(4) : 0
                 Layout.rightMargin: I18n.rtl ? root.s(4) : 0
-                horizontalAlignment: I18n.textAlignment
-                text: root.titleText
-                font.family: ThemeBackend.fontFamily
-                font.weight: Font.Bold
-                font.pixelSize: root.s(12)
-                color: ThemeBackend.liquidGlass ? ThemeBackend.text : ThemeBackend.subtext0
+                spacing: 0
+
+                Text {
+                    horizontalAlignment: I18n.textAlignment
+                    text: root.titleText
+                    font.family: ThemeBackend.fontFamily
+                    font.weight: Font.Bold
+                    font.pixelSize: root.titleSize
+                    color: (ThemeBackend.liquidGlass || root.subtitleText !== "") ? ThemeBackend.text : ThemeBackend.subtext0
+                }
+
+                Text {
+                    visible: root.subtitleText !== ""
+                    horizontalAlignment: I18n.textAlignment
+                    text: root.subtitleText
+                    font.family: ThemeBackend.fontFamily
+                    font.weight: Font.Medium
+                    font.pixelSize: root.s(11)
+                    color: ThemeBackend.subtext0
+                }
             }
 
             Item { Layout.fillWidth: true }

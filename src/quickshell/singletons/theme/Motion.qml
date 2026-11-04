@@ -60,7 +60,8 @@ Item {
             }
         }
     }
-    Component.onCompleted: animQuery.running = true
+    function refresh() { animQuery.running = true }
+    Component.onCompleted: refresh()
     Connections {
         target: Hyprland
         function onRawEvent(event) {
