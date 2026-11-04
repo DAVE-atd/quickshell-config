@@ -8,7 +8,6 @@ import "bluetooth"
 ShellRoot {
     readonly property bool performanceMode: !!(Config.getSetting("general", {}).performance)
     readonly property bool quickactionsEnabled: Config.getSetting("general", {}).quickactions !== false
-    readonly property bool dockEnabled: Config.getSetting("dock", {}).enabled !== false
 
     // Background services without UI of their own (singletons start on first reference)
     readonly property var usbguard: UsbguardService
@@ -56,17 +55,11 @@ ShellRoot {
     WidgetRedactor {}
     LockRedactor {}
 
-    Launcher {}
     Clipboard {}    
 
     Polkit {}
     WellbeingLimitOverlay {}
     PopoutManager {}
-
-    Loader {
-        active: dockEnabled
-        sourceComponent: Dock {}
-    }
 
     Loader {
         active: !performanceMode

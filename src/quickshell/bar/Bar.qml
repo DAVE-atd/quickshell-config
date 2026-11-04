@@ -171,7 +171,7 @@ Variants {
                 }
                 function toggleUpdate() {
                     let target = null;
-                    let layout = barWindowRoot.isVertical ? verticalLoader.item : horizontalLoader.item;
+                    let layout = horizontalLoader.item;
                     if (layout) target = layout.getWidget("left");
                     if (target && typeof target.toggleUpdate === "function") {
                         target.toggleUpdate();
@@ -200,7 +200,7 @@ Variants {
             property real verticalOffset: Math.round(!isVertical ? 0 : ((barWindowRoot.height - effectiveBarHeight) / 2))
 
             readonly property var horizontalLayout: horizontalLoader.item
-            readonly property var verticalLayout: verticalLoader.item
+            readonly property var verticalLayout: null
 
             property real currentBarMinX: (horizontalLayout && horizontalLayout.dynamicMaxX > horizontalLayout.dynamicMinX) ? horizontalLayout.dynamicMinX : horizontalOffset
             property real currentBarMaxX: (horizontalLayout && horizontalLayout.dynamicMaxX > horizontalLayout.dynamicMinX) ? horizontalLayout.dynamicMaxX : (horizontalOffset + effectiveBarWidth)
@@ -223,7 +223,7 @@ Variants {
                 positionChangeTimer.restart();
             }
 
-            property bool isVertical: barPosition === "left" || barPosition === "right"
+            property bool isVertical: false // Seitenleiste entfernt, nur oben/unten
 
             property real baseScale: Scaler.baseScale
 
@@ -359,30 +359,9 @@ Variants {
             Timer { interval: 400; running: true; onTriggered: barWindowRoot.isDataReady = true }
 
             Loader {
-                id: verticalLoader
-                anchors.fill: parent
-                active: barWindowRoot.isVertical
-                sourceComponent: Component {
-                    SideBar {
-                        id: verticalWrapper
-                        barWindow: barWindowRoot
-                        property real hideOffsetX: {
-                            if (!barWindowRoot || barWindowRoot.isRevealed) return 0;
-                            let offset = barWindowRoot.barHeight + barWindowRoot.edgePadding + barWindowRoot.s(10);
-                            return barWindowRoot.barPosition === "right" ? offset : -offset;
-                        }
-                        transform: Translate {
-                            x: verticalWrapper.hideOffsetX
-                            Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
-                        }
-                    }
-                }
-            }
-
-            Loader {
                 id: horizontalLoader
                 anchors.fill: parent
-                active: !barWindowRoot.isVertical
+                active: true
                 sourceComponent: Component {
                     TopBar {
                         barWindow: barWindowRoot

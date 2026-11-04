@@ -21,8 +21,8 @@ SettingsBlob {
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
             implicitWidth: rootObj.s(180)
             implicitHeight: rootObj.s(32)
-            options: [I18n.t("guide.bar.position.top"), I18n.t("guide.bar.position.bottom"), I18n.t("guide.bar.position.left"), I18n.t("guide.bar.position.right")]
-            currentIndex: section.tab.barPosition === "bottom" ? 1 : (section.tab.barPosition === "left" ? 2 : (section.tab.barPosition === "right" ? 3 : 0))
+            options: [I18n.t("guide.bar.position.top"), I18n.t("guide.bar.position.bottom")]
+            currentIndex: section.tab.barPosition === "bottom" ? 1 : 0
             accentColor: ThemeBackend.mauve
             baseColor: ThemeBackend.surface0
             hoverColor: ThemeBackend.surface1
@@ -36,8 +36,6 @@ SettingsBlob {
                 section.tab.clearPendingGroup();
                 if (index === 0) section.tab.barPosition = "top";
                 else if (index === 1) section.tab.barPosition = "bottom";
-                else if (index === 2) section.tab.barPosition = "left";
-                else if (index === 3) section.tab.barPosition = "right";
                 section.tab.updateBarSettings();
             }
         }

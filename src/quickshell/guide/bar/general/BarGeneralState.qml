@@ -13,7 +13,7 @@ GuideTab {
         "position": "top",
         "width": 100,
         "height": 40,
-        "style": "modular",
+        "style": "convex",
         "distinctPills": false,
         "centerByEdges": true,
         "time": {"format": "HH:mm:ss"},
@@ -31,15 +31,8 @@ GuideTab {
     property string barPosition: barSettings.position !== undefined ? barSettings.position : "top"
     property real currentBarWidth: barSettings.width !== undefined ? barSettings.width : 100
     property real currentBarThickness: barSettings.height !== undefined ? barSettings.height : 40
-    property string barStyle: {
-        let s = barSettings.style;
-        if (typeof s === "string") return s;
-        if (s && typeof s === "object") {
-            if (s.fill || s.mode === "fill") return "fill";
-            if (s.solid || s.mode === "solid") return "solid";
-        }
-        return "modular";
-    }
+    // Nur noch Convex (Config.pinBar)
+    property string barStyle: "convex"
     property bool distinctPills: barSettings.distinctPills !== undefined ? barSettings.distinctPills : false
     property bool centerByEdges: barSettings.centerByEdges !== undefined ? barSettings.centerByEdges : true
     property bool autohide: barSettings.autohide !== undefined ? barSettings.autohide : false
@@ -694,15 +687,6 @@ GuideTab {
         barTabRoot.barPosition = ts.position !== undefined ? ts.position : "top";
         barTabRoot.currentBarWidth = ts.width !== undefined ? ts.width : 100;
         barTabRoot.currentBarThickness = ts.height !== undefined ? ts.height : 40;
-        if (typeof ts.style === "string") {
-            barTabRoot.barStyle = ts.style;
-        } else if (ts.style && typeof ts.style === "object") {
-            if (ts.style.fill || ts.style.mode === "fill") barTabRoot.barStyle = "fill";
-            else if (ts.style.solid || ts.style.mode === "solid") barTabRoot.barStyle = "solid";
-            else barTabRoot.barStyle = "modular";
-        } else {
-            barTabRoot.barStyle = "modular";
-        }
         barTabRoot.distinctPills = ts.distinctPills !== undefined ? ts.distinctPills : false;
         barTabRoot.centerByEdges = ts.centerByEdges !== undefined ? ts.centerByEdges : true;
         barTabRoot.autohide = ts.autohide !== undefined ? ts.autohide : false;

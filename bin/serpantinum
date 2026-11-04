@@ -126,7 +126,6 @@ show_help() {
     echo "  serpantinum msg workspace 1"
     echo "  serpantinum msg workspace 2 move"
     echo "  serpantinum msg open network wifi"
-    echo "  serpantinum msg toggle launcher"
     echo "  serpantinum msg toggle clipboard"
     echo "  serpantinum weather --current-temp"
     echo "  serpantinum kill"
@@ -503,8 +502,6 @@ cli_info() {
     case "$topic" in
         dnd) cli_switch notifications.dnd status false dnd ;;
         caffeine) cli_switch idle.manualInhibit status false caffeine ;;
-        dock) cli_switch dock.enabled status true dock ;;
-        dock-autohide) cli_switch dock.autohide status false dock-autohide ;;
         sfx-mute) cli_switch general.muteSfx status false sfx-mute ;;
         matugen) cli_switch theme.matugen status true matugen ;;
         lang)
@@ -525,7 +522,7 @@ cli_info() {
         wallpaper) cli_ipc wallpaper getWallpaperPath "${2:-}" ;;
         monitors) cli_monitors "$2" ;;
         updates) cli_check_updates "$2" ;;
-        *) cli_usage "info <dnd|caffeine|dock|dock-autohide|sfx-mute|matugen|lang|languages|theme|themes|wallpaper|monitors|updates>" ;;
+        *) cli_usage "info <dnd|caffeine|sfx-mute|matugen|lang|languages|theme|themes|wallpaper|monitors|updates>" ;;
     esac
 }
 
@@ -535,14 +532,12 @@ cli_set() {
     case "$topic" in
         dnd) cli_switch notifications.dnd "$1" false dnd ;;
         caffeine) cli_caffeine "$1" ;;
-        dock) cli_switch dock.enabled "$1" true dock ;;
-        dock-autohide) cli_switch dock.autohide "$1" false dock-autohide ;;
         sfx-mute) cli_switch general.muteSfx "$1" false sfx-mute ;;
         matugen) cli_matugen "$1" ;;
         lang) cli_set_lang "$1" ;;
         theme) cli_set_theme "$1" ;;
         wallpaper) cli_set_wallpaper "$@" ;;
-        *) cli_usage "set <dnd|caffeine|dock|dock-autohide|sfx-mute> [on|off|toggle] | set <matugen> [on|off|toggle] | set lang <code> | set theme <preset> | set wallpaper <value> [screen]" ;;
+        *) cli_usage "set <dnd|caffeine|sfx-mute> [on|off|toggle] | set <matugen> [on|off|toggle] | set lang <code> | set theme <preset> | set wallpaper <value> [screen]" ;;
     esac
 }
 

@@ -118,27 +118,12 @@ PanelWindow {
                 return;
             }
 
-            if (cmd === "launcher" || targetWidget === "launcher") {
-                if (cmd === "close") {
-                    LauncherController.hide();
-                } else if (cmd === "open") {
-                    ClipboardController.hide();
-                    LauncherController.show();
-                } else {
-                    ClipboardController.hide();
-                    LauncherController.toggle();
-                }
-                return;
-            }
-
             if (cmd === "clipboard" || targetWidget === "clipboard" || cmd === "clip" || targetWidget === "clip") {
                 if (cmd === "close") {
                     ClipboardController.hide();
                 } else if (cmd === "open") {
-                    LauncherController.hide();
                     ClipboardController.show();
                 } else {
-                    LauncherController.hide();
                     ClipboardController.toggle();
                 }
                 return;
@@ -166,9 +151,6 @@ PanelWindow {
             let effectivelyActive = masterWindow.targetActive;
 
             if (cmd === "close") {
-                if (typeof DockAppMenuController !== "undefined") {
-                    DockAppMenuController.hide();
-                }
                 switchWidget("hidden", "");
             } else if (cmd === "toggle" || cmd === "open") {
                 if (targetWidget === effectivelyActive) {

@@ -589,8 +589,6 @@ Item {
                 { id: "BarModules", key: "bar_modules", name: "Modules", icon: "󰐱", file: "bar/BarModulesTab.qml" }
             ]
         },
-        { id: "Dock", key: "dock", name: "Dock", icon: "󰮯", file: "DockTab.qml" },
-        { id: "Launcher", key: "launcher", name: "Launcher", icon: "󰵆", file: "LauncherTab.qml" },
         { id: "On-Screen Display", key: "osd", name: "On-Screen Display", icon: "󰕾", file: "OnScreenDisplayTab.qml" },
         { id: "Notifications", key: "notifications", name: "Notifications", icon: "󰂚", file: "notifications/NotificationsTab.qml" },
         { id: "Screenshot", key: "screenshot", name: "Screenshot", icon: "󰹑", file: "screenshot/ScreenshotTab.qml" },

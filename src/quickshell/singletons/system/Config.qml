@@ -63,6 +63,17 @@ Item {
         Quickshell.execDetached(["bash", "-c", cmd]);
     }
 
+    // Nur noch eine Leiste: Convex, oben oder unten (Seitenleiste und die Stile modular/solid/fill
+    // wurden entfernt). Gilt für Laden und Speichern, auch für alte settings.json
+    function pinBar(obj) {
+        if (!obj || typeof obj !== "object") return obj;
+        let bar = (obj.bar && typeof obj.bar === "object") ? obj.bar : {};
+        bar.style = "convex";
+        if (bar.position !== "bottom") bar.position = "top";
+        obj.bar = bar;
+        return obj;
+    }
+
     function getSetting(key, fallbackValue) {
         if (!rawSettings || typeof rawSettings !== "object") {
             if (fallbackValue !== null && typeof fallbackValue === "object") {
@@ -119,6 +130,7 @@ Item {
                 next[key] = clonedVal;
             }
         }
+        pinBar(next);
         if (areEqual(rawSettings, next)) return;
         rawSettings = next;
         dispatchWrite(next);
@@ -172,7 +184,7 @@ Item {
                         return;
                     }
                     if (trimmed.length > 0) {
-                        let parsed = JSON.parse(trimmed);
+                        let parsed = config.pinBar(JSON.parse(trimmed));
                         if (parsed && typeof parsed === "object") {
                             if (!config.areEqual(config.rawSettings, parsed)) {
                                 config.rawSettings = parsed;

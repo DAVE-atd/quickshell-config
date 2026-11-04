@@ -45,8 +45,6 @@ BarGeneralState {
 
             BarPlacementSection { id: placementSection; tab: barTabRoot }
 
-            BarStyleSection { tab: barTabRoot }
-
             BarAutohideSection { tab: barTabRoot }
 
             BarLayoutEditor { tab: barTabRoot }
