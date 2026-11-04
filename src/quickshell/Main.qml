@@ -264,27 +264,56 @@ PanelWindow {
     function isConvexAttached(name) {
         return isConvex && (convexDropdowns.indexOf(name) !== -1 || convexSideDrawers.indexOf(name) !== -1 || name === "power");
     }
-    // Position of an attached popup of size w x h (also used when the popup changes its own size)
+    // Bar section { x0, x1 } a dropdown belongs to: the one nearest to its registry position
+    // (not the animated one, which depends on this)
+    function convexOriginFor(name) {
+        if (!isConvex || convexDropdowns.indexOf(name) === -1) return null;
+        let r = Registry.getLayout(name, 0, 0, masterWindow.width, masterWindow.height, masterWindow.globalUiScale, barPosition);
+        if (!r) return null;
+        let secs = ConvexState.sectionsFor(masterWindow.screen ? (masterWindow.screen.name || "") : "");
+        let cx = r.rx + r.w / 2, best = null, bestD = 1e9;
+        for (let i = 0; i < secs.length; i++) {
+            let d = Math.abs((secs[i].x0 + secs[i].x1) / 2 - cx);
+            if (d < bestD) { bestD = d; best = secs[i]; }
+        }
+        return best;
+    }
+    // Popups that keep their own width instead of matching their bar section
+    readonly property var convexOwnWidth: ["network"]
+    // Position (and width) of an attached popup of size w x h (also used when the popup changes its own size).
+    // Dropdowns are at least as wide as their bar section and flush with it, like the bar part pulled down.
     function convexPlace(name, w, h, mw, mh, fallbackX) {
         let t = convexFrame, bh = convexBarH, top = barPosition === "top";
         if (convexSideDrawers.indexOf(name) !== -1) {
             let y0 = top ? bh : t, y1 = mh - (top ? t : bh);
-            return { x: mw - t - w, y: Math.round(y0 + Math.max(0, (y1 - y0 - h) / 2)) };
+            return { x: mw - t - w, y: Math.round(y0 + Math.max(0, (y1 - y0 - h) / 2)), w: w };
         }
         if (name === "power") {
-            return { x: Math.round((mw - w) / 2), y: mh - (top ? t : bh) - h };
+            return { x: Math.round((mw - w) / 2), y: mh - (top ? t : bh) - h, w: w };
         }
-        return { x: Math.max(t, Math.min(mw - t - w, fallbackX)), y: top ? bh : (mh - bh - h) };
+        let x = fallbackX;
+        let o = convexOriginFor(name);
+        if (o && convexOwnWidth.indexOf(name) === -1) {
+            w = Math.max(w, o.x1 - o.x0);
+            let atLeft = o.x0 <= t + 0.5, atRight = o.x1 >= mw - t - 0.5;
+            x = atRight ? o.x1 - w : (atLeft ? o.x0 : Math.round((o.x0 + o.x1 - w) / 2));
+        }
+        return { x: Math.max(t, Math.min(mw - t - w, x)), y: top ? bh : (mh - bh - h), w: w };
     }
     function convexLayout(name, r, mw, mh) {
         let p = convexPlace(name, r.w, r.h, mw, mh, r.rx);
-        return { w: r.w, h: r.h, rx: p.x, ry: p.y, comp: r.comp, draggable: r.draggable };
+        return { w: p.w, h: r.h, rx: p.x, ry: p.y, comp: r.comp, draggable: r.draggable };
     }
 
     readonly property var convexInfo: {
         if (!isConvexAttached(currentActive) || !screenReady) return null;
         let t = convexFrame, bh = convexBarH, top = barPosition === "top", e = 0.5;
+        // Dropdowns: the shape that grows out of the bar (morphClip), not the final rect
         let x = _animX, y = _animY, w = _animW, h = _animH;
+        if (contentStage.isMorph) {
+            x = animContainer.x + morphClip.x; y = animContainer.y + morphClip.y;
+            w = morphClip.width; h = morphClip.height;
+        }
         return {
             x: x, y: y, w: w, h: h,
             top: y <= (top ? bh : t) + e,
@@ -302,6 +331,8 @@ PanelWindow {
         ConvexState.squareTop = c.top; ConvexState.squareBottom = c.bottom;
         ConvexState.squareLeft = c.left; ConvexState.squareRight = c.right;
     }
+    // Bar section the open dropdown grows out of (like minflair's centre bulge)
+    readonly property var convexOrigin: convexOriginFor(currentActive)
     readonly property bool screenReady: masterWindow.width >= 100 && masterWindow.height >= 100
     readonly property bool isCurrentDraggable: {
         let t = getLayout(masterWindow.currentActive);
@@ -634,7 +665,7 @@ PanelWindow {
         let y = t.ry;
         if (isConvexAttached(currentActive)) {
             let p = convexPlace(currentActive, tw, th, masterWindow.width, masterWindow.height, x);
-            x = p.x; y = p.y;
+            x = p.x; y = p.y; tw = p.w;
         }
         return { x: x, y: y, w: tw, h: th };
     }
@@ -668,7 +699,7 @@ PanelWindow {
         y: masterWindow._animY
         width: masterWindow._animW
         height: masterWindow._animH
-        clip: true
+        clip: !contentStage.isMorph
 
         DragHandler {
             id: windowDragHandler
@@ -698,85 +729,122 @@ PanelWindow {
             }
         }
 
+        // Convex dropdowns: the visible shape grows out of the bar section (minflair's morph);
+        // otherwise it simply fills animContainer
         Item {
-            id: contentStage
-            width: masterWindow._stageW
-            height: masterWindow._stageH
-            x: (animContainer.width - width) / 2
-            y: (animContainer.height - height) / 2
-            transformOrigin: ConvexState.origin
+            id: morphClip
+            readonly property real p: 1 - contentStage.tuck
+            readonly property var origin: masterWindow.convexOrigin
+            readonly property real ox: origin ? origin.x0 - animContainer.x : 0
+            readonly property real ow: origin ? origin.x1 - origin.x0 : animContainer.width
+            readonly property bool atBottom: masterWindow.barPosition === "bottom"
+            x: contentStage.isMorph ? ox * (1 - p) : 0
+            width: contentStage.isMorph ? ow + (animContainer.width - ow) * p : animContainer.width
+            height: contentStage.isMorph ? animContainer.height * p : animContainer.height
+            y: (contentStage.isMorph && atBottom) ? animContainer.height - height : 0
+            clip: contentStage.isMorph
 
-            // Convex: dropdowns slide out of the bar like a drawer (clipped by animContainer),
-            // System/Notifications out of the right frame edge, the power menu out of the bottom edge.
-            // tuck 0 = out, 1 = pulled into the edge; starts closing as soon as isClosing is set.
-            readonly property bool isSideDrawer: masterWindow.isConvex && masterWindow.convexSideDrawers.indexOf(masterWindow.currentActive) !== -1
-            readonly property bool isDrawer: masterWindow.isConvexAttached(masterWindow.currentActive)
-            readonly property bool tucksDown: masterWindow.currentActive === "power" || masterWindow.barPosition === "bottom"
-            // Frame edge the drawer slides out of
-            readonly property string tuckEdge: isSideDrawer ? "right" : (tucksDown ? "bottom" : "top")
-            readonly property bool shown: masterWindow.isVisible && !masterWindow.isClosing
-            property real tuck: shown ? 0 : 1
-            Behavior on tuck {
-                NumberAnimation {
-                    duration: contentStage.shown ? Motion.open : Motion.close
-                    easing.type: contentStage.shown ? Motion.openEasing : Motion.closeEasing
-                }
-            }
-            transform: Translate {
-                x: contentStage.isSideDrawer ? contentStage.tuck * contentStage.width : 0
-                y: (contentStage.isDrawer && !contentStage.isSideDrawer) ? contentStage.tuck * (contentStage.tucksDown ? contentStage.height : -contentStage.height) : 0
-            }
-            // The bar's bulge above the popup is there as long as the drawer is out at all
-            readonly property real convexOpacity: (contentStage.isDrawer && tuck >= 0.999) ? 0 : opacity
-            onConvexOpacityChanged: ConvexState.opacity = convexOpacity
-
-            scale: (masterWindow.isVisible || contentStage.isDrawer) ? 1.0 : 0.96
-            Behavior on scale {
-                NumberAnimation {
-                    duration: masterWindow.isVisible ? Motion.open : Motion.close
-                    easing.type: masterWindow.isVisible ? Motion.openEasing : Motion.closeEasing
-                }
-            }
-
-            opacity: masterWindow.isVisible ? 1.0 : 0.0
-            visible: masterWindow.isVisible || opacity > 0
-            Behavior on opacity {
-                NumberAnimation {
-                    // A drawer opens solid (it slides in from under the bar instead) and stays solid while it
-                    // slides back, otherwise it would vanish halfway
-                    duration: contentStage.isDrawer ? (masterWindow.isVisible ? 0 : Motion.close) : (masterWindow.isVisible ? Motion.normal : Motion.fast)
-                    easing.type: Easing.OutCubic
-                }
-            }
-
-            MouseArea { anchors.fill: parent }
-
-            SequentialAnimation {
-                id: switchFade
-                PropertyAction { target: widgetStack; property: "opacity"; value: 0 }
-                PauseAnimation { duration: 40 }
-                NumberAnimation { target: widgetStack; property: "opacity"; to: 1; duration: Motion.fast; easing.type: Easing.OutCubic }
-            }
-
-            StackView {
-                id: widgetStack
+            // The growing shape itself, solid in the bar colour like minflair's; the content fades in on it
+            Rectangle {
                 anchors.fill: parent
-                focus: true
+                visible: contentStage.isMorph
+                color: ThemeBackend.base
+                readonly property real r: masterWindow.convexRadius + (Math.min(ThemeBackend.borderRadius, Scaler.s(28)) - masterWindow.convexRadius) * morphClip.p
+                topLeftRadius: morphClip.atBottom ? r : 0
+                topRightRadius: morphClip.atBottom ? r : 0
+                bottomLeftRadius: morphClip.atBottom ? 0 : r
+                bottomRightRadius: morphClip.atBottom ? 0 : r
+            }
 
-                replaceEnter: null
-                replaceExit: null
-                pushEnter: null
-                pushExit: null
-                popEnter: null
-                popExit: null
+            Item {
+                id: contentStage
+                width: masterWindow._stageW
+                height: masterWindow._stageH
+                // Fixed on screen while morphClip grows around it
+                x: (animContainer.width - width) / 2 - morphClip.x
+                y: (animContainer.height - height) / 2 - morphClip.y
+                transformOrigin: isMorph ? (morphClip.atBottom ? Item.Bottom : Item.Top) : ConvexState.origin
 
-                Keys.onEscapePressed: (event) => {
-                    switchWidget("hidden", "");
-                    event.accepted = true;
+                // Convex: dropdowns slide out of the bar like a drawer (clipped by animContainer),
+                // System/Notifications out of the right frame edge, the power menu out of the bottom edge.
+                // tuck 0 = out, 1 = pulled into the edge; starts closing as soon as isClosing is set.
+                readonly property bool isSideDrawer: masterWindow.isConvex && masterWindow.convexSideDrawers.indexOf(masterWindow.currentActive) !== -1
+                readonly property bool isDrawer: masterWindow.isConvexAttached(masterWindow.currentActive)
+                readonly property bool tucksDown: masterWindow.currentActive === "power" || masterWindow.barPosition === "bottom"
+                // Frame edge the drawer slides out of
+                readonly property string tuckEdge: isSideDrawer ? "right" : (tucksDown ? "bottom" : "top")
+                readonly property bool shown: masterWindow.isVisible && !masterWindow.isClosing
+                // Bar dropdowns morph out of their bar section instead of sliding
+                readonly property bool isMorph: isDrawer && !isSideDrawer && masterWindow.currentActive !== "power" && masterWindow.convexOrigin !== null
+                // minflair ConvexCenterPanel: content fades in from 20 % (out below 40 % when closing)
+                readonly property real morphFade: shown ? Math.min(1, Math.max(0, (morphClip.p - 0.2) / 0.8))
+                                                        : Math.min(1, Math.max(0, (morphClip.p - 0.4) / 0.6))
+                property real tuck: shown ? 0 : 1
+                Behavior on tuck {
+                    NumberAnimation {
+                        duration: contentStage.shown ? Motion.open : Motion.close
+                        easing.type: contentStage.shown ? Motion.openEasing : Motion.closeEasing
+                    }
+                }
+                transform: Translate {
+                    x: contentStage.isSideDrawer ? contentStage.tuck * contentStage.width : 0
+                    y: (contentStage.isDrawer && !contentStage.isSideDrawer && !contentStage.isMorph) ? contentStage.tuck * (contentStage.tucksDown ? contentStage.height : -contentStage.height) : 0
+                }
+                // The bar's bulge above the popup is there as long as the drawer is out at all
+                readonly property real convexOpacity: (contentStage.isDrawer && tuck >= 0.999) ? 0 : (isMorph ? 1 : opacity)
+                onConvexOpacityChanged: ConvexState.opacity = convexOpacity
+
+                scale: isMorph ? 0.94 + 0.06 * Math.min(1, Math.max(0, (morphClip.p - (shown ? 0.15 : 0.3)) / (shown ? 0.85 : 0.7)))
+                     : ((masterWindow.isVisible || contentStage.isDrawer) ? 1.0 : 0.96)
+                Behavior on scale {
+                    enabled: !contentStage.isMorph
+                    NumberAnimation {
+                        duration: masterWindow.isVisible ? Motion.open : Motion.close
+                        easing.type: masterWindow.isVisible ? Motion.openEasing : Motion.closeEasing
+                    }
                 }
 
-                onCurrentItemChanged: {
-                    if (currentItem) currentItem.forceActiveFocus();
+                opacity: isMorph ? morphFade : (masterWindow.isVisible ? 1.0 : 0.0)
+                visible: masterWindow.isVisible || opacity > 0
+                Behavior on opacity {
+                    enabled: !contentStage.isMorph
+                    NumberAnimation {
+                        // A drawer opens solid (it slides in from under the bar instead) and stays solid while it
+                        // slides back, otherwise it would vanish halfway
+                        duration: contentStage.isDrawer ? (masterWindow.isVisible ? 0 : Motion.close) : (masterWindow.isVisible ? Motion.normal : Motion.fast)
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                MouseArea { anchors.fill: parent }
+
+                SequentialAnimation {
+                    id: switchFade
+                    PropertyAction { target: widgetStack; property: "opacity"; value: 0 }
+                    PauseAnimation { duration: 40 }
+                    NumberAnimation { target: widgetStack; property: "opacity"; to: 1; duration: Motion.fast; easing.type: Easing.OutCubic }
+                }
+
+                StackView {
+                    id: widgetStack
+                    anchors.fill: parent
+                    focus: true
+
+                    replaceEnter: null
+                    replaceExit: null
+                    pushEnter: null
+                    pushExit: null
+                    popEnter: null
+                    popExit: null
+
+                    Keys.onEscapePressed: (event) => {
+                        switchWidget("hidden", "");
+                        event.accepted = true;
+                    }
+
+                    onCurrentItemChanged: {
+                        if (currentItem) currentItem.forceActiveFocus();
+                    }
                 }
             }
         }
@@ -903,7 +971,7 @@ PanelWindow {
         let finalY = t.ry;
         if (isConvexAttached(newWidget)) {
             let p = convexPlace(newWidget, finalW, finalH, masterWindow.width, masterWindow.height, finalX);
-            finalX = p.x; finalY = p.y;
+            finalX = p.x; finalY = p.y; finalW = p.w;
         }
 
         if (!masterWindow.userMoved || !masterWindow.isCurrentDraggable) {

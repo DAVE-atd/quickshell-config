@@ -25,6 +25,18 @@ Singleton {
     }
     function centerW(screen) { return centerWidths[screen] || 0 }
 
+    // Extents { x0, x1 } of each bar's bulges (left / center / right) per screen name
+    // (bar/ConvexBulges.qml). Main.qml grows a dropdown out of the nearest one.
+    property var sectionMap: ({})
+    function setSections(screen, list) {
+        // Only on real changes: every write re-evaluates Main.qml's morph bindings
+        if (JSON.stringify(sectionMap[screen] || []) === JSON.stringify(list)) return;
+        let m = Object.assign({}, sectionMap);
+        m[screen] = list;
+        sectionMap = m;
+    }
+    function sectionsFor(screen) { return sectionMap[screen] || [] }
+
     // Open tray menu (popouts/TrayBase.qml, own window): the bar grows a bulge of its width above it
     property string trayScreen: ""
     property real trayX: 0

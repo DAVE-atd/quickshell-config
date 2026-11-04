@@ -28,7 +28,9 @@ Item {
     readonly property real pillSize: s(isCompact ? 28 : 30)
     implicitWidth: isVertical ? (parent ? parent.width : 0) : pill.width + s(isCompact ? 8 : 10)
     implicitHeight: isVertical ? pill.height + s(isCompact ? 8 : 10) : (parent ? parent.height : 0)
-    visible: isPreview || ts.available
+    // BarModule gives a hidden face no width
+    readonly property bool isFaceVisible: isPreview || ts.available
+    visible: isFaceVisible
 
     ClickButton {
         id: pill

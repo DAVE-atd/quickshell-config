@@ -32,7 +32,9 @@ Item {
     readonly property real pillSize: s(isCompact ? 28 : 30)
     implicitWidth: isVertical ? (parent ? parent.width : 0) : pill.width + s(isCompact ? 8 : 10)
     implicitHeight: isVertical ? pill.height + s(isCompact ? 8 : 10) : (parent ? parent.height : 0)
-    visible: isPreview || clam.available
+    // BarModule gives a hidden face no width
+    readonly property bool isFaceVisible: isPreview || clam.available
+    visible: isFaceVisible
 
     ClickButton {
         id: pill

@@ -58,6 +58,8 @@ Rectangle {
         if (faceLoader.item.targetLength !== undefined) {
             return faceLoader.item.targetLength;
         }
+        // A face that hides itself (isFaceVisible, e.g. security without ClamAV) takes no room
+        if (faceLoader.item.isFaceVisible === false) return 0;
         let implicitLength = isVertical ? faceLoader.item.implicitHeight : faceLoader.item.implicitWidth;
         if (implicitLength !== undefined && implicitLength > 0) {
             return implicitLength;

@@ -30,17 +30,29 @@ Item {
     onScreenNameChanged: ConvexState.setCenterW(screenName, centerW)
     Component.onCompleted: ConvexState.setCenterW(screenName, centerW)
 
+    // Visible extent of a bar section (same rules as the delegates below), published for Main.qml
+    function extent(def) {
+        let tl = def.x - def.pad <= frame + join;
+        let tr = def.x + def.w + def.pad >= width - frame - join;
+        return { x0: tl ? frame : def.x - def.pad, x1: tr ? width - frame : def.x + def.w + def.pad };
+    }
+    // Only the three bar sections, so the popup's own bulge never feeds back into Main.qml
+    readonly property var barSections: [
+        { x: bar.lFinalX, w: bar.lWidthTarget, pad: pad, popup: false },
+        { x: bar.cFinalX, w: bar.cWidthTarget, pad: pad, popup: false },
+        { x: bar.rFinalClampedX, w: bar.rWidthTarget, pad: pad, popup: false }
+    ]
+    readonly property var sectionRects: barSections.filter(d => d.w > 0).map(d => extent(d))
+    onSectionRectsChanged: ConvexState.setSections(screenName, sectionRects)
+
     readonly property bool popupAttached: ConvexState.active && ConvexState.screenName === screenName
         && (atBottom ? ConvexState.squareBottom : ConvexState.squareTop)
 
     // pad: room around the pills; popup: square ends, exact edges, fades with the popup
-    readonly property var sections: [
-        { x: bar.lFinalX, w: bar.lWidthTarget, pad: pad, popup: false },
-        { x: bar.cFinalX, w: bar.cWidthTarget, pad: pad, popup: false },
-        { x: bar.rFinalClampedX, w: bar.rWidthTarget, pad: pad, popup: false },
+    readonly property var sections: barSections.concat([
         { x: ConvexState.x, w: popupAttached ? ConvexState.w : 0, pad: 0, popup: true },
         { x: ConvexState.trayX, w: ConvexState.trayScreen === screenName ? ConvexState.trayW : 0, pad: 0, popup: true, tray: true }
-    ]
+    ])
 
     // Rounded inner corners of the screen frame on the bar's edge (frame/ScreenFrame.qml draws the rest)
     readonly property real frameRadius: s(16)
