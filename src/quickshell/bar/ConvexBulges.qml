@@ -87,8 +87,8 @@ Item {
                 bottomRightRadius: !root.atBottom && !sec.touchRight ? sec.r : 0
 
                 // The popup bulge follows Main.qml's own animation
-                Behavior on x { enabled: !sec.def.popup && root.bar.layoutAnimationsEnabled; NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                Behavior on width { enabled: !sec.def.popup && root.bar.layoutAnimationsEnabled; NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                Behavior on x { enabled: !sec.def.popup && root.bar.layoutAnimationsEnabled; NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
+                Behavior on width { enabled: !sec.def.popup && root.bar.layoutAnimationsEnabled; NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
             }
 
             // Concave joins between the strip and the bulge's sides

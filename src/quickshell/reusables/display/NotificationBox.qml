@@ -296,11 +296,11 @@ Item {
                 }
 
                 add: Transition {
-                    NumberAnimation { property: "scale"; from: 0.96; to: 1.0; duration: 250; easing.type: Easing.OutQuint }
-                    NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 250; easing.type: Easing.OutQuint }
+                    NumberAnimation { property: "scale"; from: 0.96; to: 1.0; duration: Motion.normal; easing.type: Easing.OutQuint }
+                    NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: Motion.normal; easing.type: Easing.OutQuint }
                 }
                 remove: Transition {
-                    NumberAnimation { property: "opacity"; to: 0.0; duration: 250; easing.type: Easing.OutQuint }
+                    NumberAnimation { property: "opacity"; to: 0.0; duration: Motion.normal; easing.type: Easing.OutQuint }
                 }
 
                 delegate: Item {
@@ -365,7 +365,7 @@ Item {
                     property real groupExpandProgress: isExpanded ? 1.0 : 0.0
                     Behavior on groupExpandProgress {
                         enabled: !groupHeaderMa.draggingV
-                        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                        NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
                     }
 
                     property real dragX: 0
@@ -378,7 +378,7 @@ Item {
                         target: groupWrapper
                         property: "dragX"
                         to: notifList.width * 1.2
-                        duration: 250
+                        duration: Motion.normal
                         easing.type: Easing.OutQuad
                     }
                     Timer {
@@ -403,7 +403,7 @@ Item {
                         property: "dragX"
                         from: groupWrapper.dragX
                         to: 0
-                        duration: 250
+                        duration: Motion.normal
                         easing.type: Easing.OutCubic
                     }
 
@@ -413,7 +413,7 @@ Item {
                         property: "dragY"
                         from: groupWrapper.dragY
                         to: 0
-                        duration: 250
+                        duration: Motion.normal
                         easing.type: Easing.OutCubic
                     }
 
@@ -423,7 +423,7 @@ Item {
                         property: "dragX"
                         from: groupWrapper.dragX
                         to: 0
-                        duration: 250
+                        duration: Motion.normal
                         easing.type: Easing.OutQuad
                         onFinished: NotificationManager.dismissGroup(groupKey)
                     }
@@ -488,7 +488,7 @@ Item {
                         anchors.left: parent.left
                         anchors.right: parent.right
                         implicitHeight: groupCol.implicitHeight
-                        Behavior on implicitHeight { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                        Behavior on implicitHeight { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
 
                         ColumnLayout {
                             id: groupCol
@@ -557,8 +557,8 @@ Item {
                                     property color baseColor: (typeof unreadCount !== "undefined" && unreadCount > 0) ? Qt.lighter(ThemeBackend.surface1, 1.05) : ThemeBackend.surface1
                                     color: headerGlass.active ? "transparent" : ThemeBackend.faded((groupHeaderMa.pressed && !groupHeaderMa.draggingH && !groupHeaderMa.draggingV) ? Qt.darker(baseColor, 1.1) : (groupHeaderMa.containsMouse && !groupHeaderMa.draggingH && !groupHeaderMa.draggingV ? Qt.lighter(baseColor, 1.05) : baseColor))
                                     scale: (groupHeaderMa.pressed && !groupHeaderMa.draggingH && !groupHeaderMa.draggingV) ? 0.98 : 1.0
-                                    Behavior on color { enabled: !groupHeaderMa.draggingH && !groupHeaderMa.draggingV; ColorAnimation { duration: 150 } }
-                                    Behavior on scale { enabled: !groupHeaderMa.draggingH && !groupHeaderMa.draggingV; NumberAnimation { duration: 150; easing.type: Easing.OutQuint } }
+                                    Behavior on color { enabled: !groupHeaderMa.draggingH && !groupHeaderMa.draggingV; ColorAnimation { duration: Motion.fast } }
+                                    Behavior on scale { enabled: !groupHeaderMa.draggingH && !groupHeaderMa.draggingV; NumberAnimation { duration: Motion.fast; easing.type: Easing.OutQuint } }
                                     clip: true
 
                                     GlassFill {
@@ -568,7 +568,7 @@ Item {
                                         tintColor: parent.baseColor
                                         tintAmount: 0.3
                                         press: groupHeaderMa.pressed ? 0.8 : (groupHeaderMa.containsMouse ? 0.2 : 0)
-                                        Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                                        Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
                                     }
 
                                     MouseArea {

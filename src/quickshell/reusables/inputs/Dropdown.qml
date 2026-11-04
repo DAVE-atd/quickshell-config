@@ -328,8 +328,8 @@ Item {
         color: glass.active ? "transparent" : ((root.isOpen || root.isHoveredOrHighlighted) ? root.hoverColor : root.baseColor)
         opacity: root.enabled ? 1.0 : 0.5
 
-        Behavior on color { ColorAnimation { duration: 150 } }
-        Behavior on opacity { NumberAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: Motion.fast } }
+        Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 
         GlassFill {
             id: glass
@@ -338,12 +338,12 @@ Item {
             tintColor: (root.isOpen || root.isHoveredOrHighlighted) ? root.hoverColor : root.baseColor
             tintAmount: (root.isOpen || root.isHoveredOrHighlighted) ? 0.36 : 0.26
             press: btnMa.pressed ? 1 : (root.isOpen ? 0.5 : (root.isHoveredOrHighlighted ? 0.2 : 0))
-            Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-            Behavior on tintAmount { NumberAnimation { duration: 150 } }
+            Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
+            Behavior on tintAmount { NumberAnimation { duration: Motion.fast } }
         }
 
         scale: (!root.enabled ? 1.0 : (btnMa.pressed ? 0.96 : 1.0)) * root.popScale
-        Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+        Behavior on scale { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
 
         RowLayout {
             layoutDirection: I18n.layoutDirection
@@ -385,7 +385,7 @@ Item {
                         color: root.subTextColor
                         opacity: (innerInput.text.length === 0 && charModel.count === 0) ? 0.45 : 0.0
                         anchors.verticalCenter: parent.verticalCenter
-                        Behavior on opacity { NumberAnimation { duration: 150 } }
+                        Behavior on opacity { NumberAnimation { duration: Motion.fast } }
                     }
 
                     Rectangle {
@@ -426,13 +426,13 @@ Item {
                         property real entranceOvershoot: 3.2
                         property int exitDuration: 160
 
-                        Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
+                        Behavior on x { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuad } }
 
                         add: Transition {
                             ParallelAnimation {
                                 NumberAnimation { property: "scale"; from: 0.3; to: 1.0; duration: charRow.entranceDuration; easing.type: Easing.OutBack; easing.overshoot: charRow.entranceOvershoot }
                                 NumberAnimation { property: "y"; from: 10; to: 0; duration: charRow.entranceDuration; easing.type: Easing.OutBack; easing.overshoot: charRow.entranceOvershoot * 0.8 }
-                                NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 150; easing.type: Easing.OutCubic }
+                                NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Motion.fast; easing.type: Easing.OutCubic }
                             }
                         }
 
@@ -445,7 +445,7 @@ Item {
                         }
 
                         displaced: Transition {
-                            NumberAnimation { properties: "x,y"; duration: 250; easing.type: Easing.OutBack; easing.overshoot: 1.6 }
+                            NumberAnimation { properties: "x,y"; duration: Motion.normal; easing.type: Easing.OutBack; easing.overshoot: 1.6 }
                         }
 
                         delegate: Item {
@@ -473,15 +473,15 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         x: root.scrollOffset + (innerInput.cursorPosition * root.charSlotStep)
 
-                        Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
+                        Behavior on x { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuad } }
 
                         SequentialAnimation on opacity {
                             running: root.isEditing && (innerInput.activeFocus || root.action_highlight)
                             loops: Animation.Infinite
-                            NumberAnimation { to: 0; duration: 100; easing.type: Easing.InQuad }
-                            PauseAnimation { duration: 400 }
-                            NumberAnimation { to: 1; duration: 100; easing.type: Easing.OutQuad }
-                            PauseAnimation { duration: 400 }
+                            NumberAnimation { to: 0; duration: Motion.ultraFast; easing.type: Easing.InQuad }
+                            PauseAnimation { duration: Motion.ultraSlow }
+                            NumberAnimation { to: 1; duration: Motion.ultraFast; easing.type: Easing.OutQuad }
+                            PauseAnimation { duration: Motion.ultraSlow }
                         }
                     }
 
@@ -576,7 +576,7 @@ Item {
                 height: root.iconSize
 
                 rotation: root.isOpen ? 90 : -90
-                Behavior on rotation { NumberAnimation { duration: 250; easing.type: Easing.OutBack } }
+                Behavior on rotation { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutBack } }
 
                 property real armThickness: Math.max(1.5, (root.iconSize / 0.38) * 0.048)
                 property real armLength: Math.max(5, (root.iconSize / 0.38) * 0.19)
@@ -596,7 +596,7 @@ Item {
                         radius: width / 2
                         color: root.iconColor
                         antialiasing: true
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on color { ColorAnimation { duration: Motion.fast } }
                     }
 
                     Rectangle {
@@ -609,7 +609,7 @@ Item {
                         rotation: 40
                         color: root.iconColor
                         antialiasing: true
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on color { ColorAnimation { duration: Motion.fast } }
                     }
 
                     Rectangle {
@@ -622,7 +622,7 @@ Item {
                         rotation: -40
                         color: root.iconColor
                         antialiasing: true
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on color { ColorAnimation { duration: Motion.fast } }
                     }
                 }
             }
@@ -635,13 +635,13 @@ Item {
             color: "#ffffff"
             visible: !glass.active
             opacity: root.flashOpacity
-            PropertyAnimation on opacity { id: btnFlashAnim; to: 0; duration: 400; easing.type: Easing.OutExpo }
+            PropertyAnimation on opacity { id: btnFlashAnim; to: 0; duration: Motion.ultraSlow; easing.type: Easing.OutExpo }
         }
 
         SequentialAnimation {
             id: btnPopAnim
-            NumberAnimation { target: root; property: "popScale"; to: 1.04; duration: 100; easing.type: Easing.OutQuad }
-            NumberAnimation { target: root; property: "popScale"; to: 1.0; duration: 400; easing.type: Easing.OutQuint }
+            NumberAnimation { target: root; property: "popScale"; to: 1.04; duration: Motion.ultraFast; easing.type: Easing.OutQuad }
+            NumberAnimation { target: root; property: "popScale"; to: 1.0; duration: Motion.ultraSlow; easing.type: Easing.OutQuint }
         }
 
         MouseArea {
@@ -737,13 +737,13 @@ Item {
         }
 
         enter: Transition {
-            NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 250; easing.type: Easing.OutQuint }
+            NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: Motion.normal; easing.type: Easing.OutQuint }
             NumberAnimation { property: "scale"; from: ThemeBackend.liquidGlass ? 0.82 : 0.9; to: 1.0; duration: ThemeBackend.liquidGlass ? 380 : 200; easing.type: ThemeBackend.liquidGlass ? Easing.OutBack : Easing.OutQuint }
         }
 
         exit: Transition {
-            NumberAnimation { property: "opacity"; from: 1.0; to: 0.0; duration: 150; easing.type: Easing.InQuint }
-            NumberAnimation { property: "scale"; from: 1.0; to: 0.9; duration: 150; easing.type: Easing.InQuint }
+            NumberAnimation { property: "opacity"; from: 1.0; to: 0.0; duration: Motion.fast; easing.type: Easing.InQuint }
+            NumberAnimation { property: "scale"; from: 1.0; to: 0.9; duration: Motion.fast; easing.type: Easing.InQuint }
         }
 
         contentItem: ListView {
@@ -833,12 +833,12 @@ Item {
                 policy: listView.hasOverflow ? ScrollBar.AlwaysOn : ScrollBar.AlwaysOff
                 visible: listView.hasOverflow
                 opacity: (listView.hasOverflow && (listHover.hovered || vScrollBar.hovered || vScrollBar.pressed)) ? 1.0 : 0.0
-                Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 
                 contentItem: Rectangle {
                     radius: 2
                     color: ThemeBackend.liquidGlass ? Qt.alpha(root.textColor, (vScrollBar.pressed || vScrollBar.hovered) ? 0.6 : 0.3) : ((vScrollBar.pressed || vScrollBar.hovered) ? root.accentColor : root.borderColor)
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on color { ColorAnimation { duration: Motion.fast } }
                 }
 
                 background: Rectangle {
@@ -901,15 +901,15 @@ Item {
                 opacity: (root.isEditing || shown) ? 1.0 : 0.0
                 transform: Translate {
                     y: (root.isEditing || shown) ? 0 : 8
-                    Behavior on y { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                    Behavior on y { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
                 }
-                Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                Behavior on opacity { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
 
                 color: delegateGlass.active ? "transparent" : (root.currentIndex === realIndex ? (ThemeBackend.liquidGlass ? Qt.alpha(root.accentColor, 0.28) : root.accentColor) : ((itemMa.pressed && !hoverLens.glassActive) ? Qt.darker(root.hoverColor, 1.1) : ((itemMa.containsMouse && !hoverLens.glassActive) ? root.hoverColor : "transparent")))
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: Motion.fast } }
 
                 scale: itemMa.pressed ? 0.96 : ((itemMa.containsMouse && !hoverLens.glassActive) ? 1.02 : 1.0)
-                Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                Behavior on scale { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
 
                 Component.onDestruction: {
                     if (listView.hoverItem === delegateRect) listView.hoverItem = null;
@@ -929,7 +929,7 @@ Item {
                     tintAmount: delegateRect.isSelected ? 0.5 : 0.14
                     tintStrength: 1.0
                     press: itemMa.pressed ? 0.8 : (itemMa.containsMouse ? 0.25 : 0)
-                    Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                    Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
                 }
 
                 Rectangle {
@@ -939,7 +939,7 @@ Item {
                     color: "#ffffff"
                     visible: !delegateGlass.active
                     opacity: delegateRect.flashOpacity
-                    PropertyAnimation on opacity { id: itemFlashAnim; to: 0; duration: 400; easing.type: Easing.OutExpo }
+                    PropertyAnimation on opacity { id: itemFlashAnim; to: 0; duration: Motion.ultraSlow; easing.type: Easing.OutExpo }
                 }
 
                 Text {
@@ -953,7 +953,7 @@ Item {
                     color: (delegateRect.isSelected && !delegateGlass.active && !ThemeBackend.liquidGlass) ? root.activeTextColor : root.textColor
                     elide: Text.ElideRight
                     verticalAlignment: Text.AlignVCenter
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on color { ColorAnimation { duration: Motion.fast } }
                 }
 
                 MouseArea {

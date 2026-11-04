@@ -264,16 +264,16 @@ Item {
 
     ParallelAnimation {
         id: startupSequence
-        NumberAnimation { target: root; property: "introContent"; to: 1.0; duration: 250; easing.type: Easing.OutCubic }
-        NumberAnimation { target: root; property: "introTop"; from: 0; to: 1.0; duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { target: root; property: "introContent"; to: 1.0; duration: Motion.normal; easing.type: Easing.OutCubic }
+        NumberAnimation { target: root; property: "introTop"; from: 0; to: 1.0; duration: Motion.normal; easing.type: Easing.OutCubic }
 
         SequentialAnimation {
             PauseAnimation { duration: 30 }
-            NumberAnimation { target: root; property: "introSliders"; from: 0; to: 1.0; duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { target: root; property: "introSliders"; from: 0; to: 1.0; duration: Motion.normal; easing.type: Easing.OutCubic }
         }
         SequentialAnimation {
             PauseAnimation { duration: 55 }
-            NumberAnimation { target: root; property: "introQuickActions"; from: 0; to: 1.0; duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { target: root; property: "introQuickActions"; from: 0; to: 1.0; duration: Motion.normal; easing.type: Easing.OutCubic }
         }
         SequentialAnimation {
             PauseAnimation { duration: 80 }
@@ -302,13 +302,13 @@ Item {
     SequentialAnimation {
         id: closeSequence
         ParallelAnimation {
-            NumberAnimation { target: root; property: "introContent"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
-            NumberAnimation { target: root; property: "introTop"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
-            NumberAnimation { target: root; property: "introSliders"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
-            NumberAnimation { target: root; property: "introQuickActions"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
-            NumberAnimation { target: root; property: "introNotifs"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
-            NumberAnimation { target: root; property: "introActions"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
-            NumberAnimation { target: root; property: "introCore"; to: 0.0; duration: 250; easing.type: Easing.InCubic }
+            NumberAnimation { target: root; property: "introContent"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
+            NumberAnimation { target: root; property: "introTop"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
+            NumberAnimation { target: root; property: "introSliders"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
+            NumberAnimation { target: root; property: "introQuickActions"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
+            NumberAnimation { target: root; property: "introNotifs"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
+            NumberAnimation { target: root; property: "introActions"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
+            NumberAnimation { target: root; property: "introCore"; to: 0.0; duration: Motion.close; easing.type: Motion.closeEasing }
         }
         ScriptAction {
             script: {
@@ -351,7 +351,7 @@ Item {
                 text: root.isCharging ? "󰂄" : (root.batCapacity > 20 ? "󰁹" : "󰂃")
                 Behavior on color {
                     enabled: root.visible
-                    ColorAnimation { duration: 400 }
+                    ColorAnimation { duration: Motion.ultraSlow }
                 }
                 Layout.alignment: Qt.AlignVCenter
             }
@@ -369,7 +369,7 @@ Item {
                     text: Math.round(root.animCapacity) + "%"
                     Behavior on color {
                         enabled: root.visible
-                        ColorAnimation { duration: 400 }
+                        ColorAnimation { duration: Motion.ultraSlow }
                     }
                 }
 
@@ -391,7 +391,7 @@ Item {
                     text: timeString
                     Behavior on color {
                         enabled: root.visible
-                        ColorAnimation { duration: 250 }
+                        ColorAnimation { duration: Motion.normal }
                     }
                 }
             }

@@ -426,7 +426,7 @@ Item {
                 anchors.fill: parent
                 visible: stateCache.activeMode === 0
                 opacity: visible ? 1.0 : 0.0
-                Behavior on opacity { NumberAnimation { duration: 250 } }
+                Behavior on opacity { NumberAnimation { duration: Motion.normal } }
 
                 Item {
                     anchors.top: parent.top
@@ -519,7 +519,7 @@ Item {
                 anchors.fill: parent
                 visible: stateCache.activeMode === 1
                 opacity: visible ? 1.0 : 0.0
-                Behavior on opacity { NumberAnimation { duration: 250 } }
+                Behavior on opacity { NumberAnimation { duration: Motion.normal } }
 
                 property bool isRunning: stateCache.swStartEpoch > 0
                 property real currentDisplayMs: 0
@@ -646,7 +646,7 @@ Item {
                 anchors.fill: parent
                 visible: stateCache.activeMode === 2
                 opacity: visible ? 1.0 : 0.0
-                Behavior on opacity { NumberAnimation { duration: 250 } }
+                Behavior on opacity { NumberAnimation { duration: Motion.normal } }
 
                 property bool isRunning: stateCache.pomoTargetEpoch > 0
                 property bool showSettings: false

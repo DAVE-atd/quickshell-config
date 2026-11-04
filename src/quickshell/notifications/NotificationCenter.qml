@@ -58,7 +58,7 @@ Item {
             target: root
             property: "introContent"
             to: 1.0
-            duration: 400
+            duration: Motion.ultraSlow
             easing.type: Easing.OutQuart
         } 
     }
@@ -70,7 +70,7 @@ Item {
                 target: root
                 property: "introContent"
                 to: 0.0
-                duration: 250
+                duration: Motion.normal
                 easing.type: Easing.InQuart
             }
         }

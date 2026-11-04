@@ -22,7 +22,7 @@ Item {
         interactive: true
         clip: true
 
-        move: Transition { NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutQuint } }
+        move: Transition { NumberAnimation { properties: "x,y"; duration: Motion.ultraSlow; easing.type: Easing.OutQuint } }
 
         ScrollBar.vertical: ScrollBar {
             active: weekAppList.moving || weekAppList.movingVertically
@@ -38,7 +38,7 @@ Item {
             radius: ThemeBackend.borderRadius
             color: gfWeekRow.active ? "transparent" : (weekRowMa.containsMouse ? Qt.alpha(ThemeBackend.surface1, 0.45) : Qt.alpha(ThemeBackend.surface0, 0.4))
 
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: Motion.fast } }
 
             transform: Translate { y: (index * rootObj.s(12)) * (1 - details.tab.introBottom) }
 
@@ -49,7 +49,7 @@ Item {
                 tintColor: Qt.alpha(ThemeBackend.surface0, 0.4)
                 tintAmount: 0.25
                 press: weekRowMa.pressed ? 0.8 : (weekRowMa.containsMouse ? 0.25 : 0)
-                Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
             }
 
             MouseArea {

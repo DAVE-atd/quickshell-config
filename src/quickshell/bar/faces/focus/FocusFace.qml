@@ -71,7 +71,7 @@ Item {
 
             Behavior on width {
                 enabled: !root.isVertical && (barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging) : true)
-                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
             }
 
             Item {

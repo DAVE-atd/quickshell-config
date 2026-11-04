@@ -21,8 +21,8 @@ Item {
     visible: opacity > 0.0
     clip: true
 
-    Behavior on x { NumberAnimation { duration: 400; easing.type: Easing.OutQuart } }
-    Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+    Behavior on x { NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutQuart } }
+    Behavior on opacity { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
 
     ColumnLayout {
         anchors.top: parent.top
@@ -57,7 +57,7 @@ Item {
                 anchors.topMargin: root.s(5)
                 height: root.s(45)
                 opacity: root.eqData.mono === true ? 0.45 : 1.0
-                Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 
                 Repeater {
                     model: 9
@@ -121,7 +121,7 @@ Item {
                             height: parent.height
                             clip: true
                             opacity: width > 0.5 ? 1.0 : 0.0
-                            Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                            Behavior on opacity { NumberAnimation { duration: Motion.fast; easing.type: Easing.OutCubic } }
 
                             GlassFill {
                                 id: balanceFillGlass
@@ -134,7 +134,7 @@ Item {
                                 tintAmount: 0.6
                                 tintStrength: 1.0
                                 press: balanceSlider.pressed ? 0.5 : (balanceSlider.hovered ? 0.2 : 0)
-                                Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                                Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
                             }
 
                             Rectangle {
@@ -174,13 +174,13 @@ Item {
                             tintAmount: 0.45
                             shadow: 1
                             press: balanceSlider.pressed ? 1 : (balanceSlider.hovered ? 0.3 : 0)
-                            Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                            Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
                         }
                         scale: balanceSlider.pressed ? 1.25 : (balanceSlider.hovered ? 1.12 : 1.0)
 
-                        Behavior on color { ColorAnimation { duration: 150 } }
-                        Behavior on width { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
-                        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutBack } }
+                        Behavior on color { ColorAnimation { duration: Motion.fast } }
+                        Behavior on width { NumberAnimation { duration: Motion.fast; easing.type: Easing.OutCubic } }
+                        Behavior on scale { NumberAnimation { duration: Motion.fast; easing.type: Easing.OutBack } }
                     }
                 }
             }

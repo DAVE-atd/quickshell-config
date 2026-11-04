@@ -103,17 +103,17 @@ Item {
         property real actualStart: targetStart
         property real actualEnd: targetEnd
 
-        Behavior on actualStart { NumberAnimation { id: startAnim; duration: 250; easing.type: Easing.OutExpo } }
-        Behavior on actualEnd { NumberAnimation { id: endAnim; duration: 250; easing.type: Easing.OutExpo } }
+        Behavior on actualStart { NumberAnimation { id: startAnim; duration: Motion.normal; easing.type: Easing.OutExpo } }
+        Behavior on actualEnd { NumberAnimation { id: endAnim; duration: Motion.normal; easing.type: Easing.OutExpo } }
 
         readonly property bool isMoving: Math.abs(actualStart - targetStart) > 0.5 || Math.abs(actualEnd - targetEnd) > 0.5
         property real lift: (numbersGlass.active && isMoving) ? 1.0 : 0.0
-        Behavior on lift { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+        Behavior on lift { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
         scale: 1.0 + 0.14 * lift
         transformOrigin: Item.Center
 
         opacity: (widget && widget.workspaceCount > 0 && widget.activeIndex >= 0) ? 1.0 : 0.0
-        Behavior on opacity { NumberAnimation { duration: 250 } }
+        Behavior on opacity { NumberAnimation { duration: Motion.normal } }
     }
 
     AxisFlow {
@@ -147,10 +147,10 @@ Item {
                         ? Qt.alpha(ThemeBackend.text, 0.1)
                         : (wsPill.isActive ? "transparent" : (wsPill.isOccupied ? Qt.alpha(ThemeBackend.text, 0.15) : "transparent"))
 
-                    Behavior on color { ColorAnimation { duration: 250 } }
+                    Behavior on color { ColorAnimation { duration: Motion.normal } }
 
                     scale: wsPill.isHovered && !wsPill.isActive ? 1.08 : 1.0
-                    Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutBack } }
+                    Behavior on scale { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutBack } }
 
                     GlassFill {
                         id: numbersHoverGlass
@@ -167,8 +167,8 @@ Item {
                 transform: Translate {
                     x: (!numbersFaceRoot.isVertical || wsPill.initAnimTrigger) ? 0 : (widget ? widget.s(15) : 15)
                     y: (numbersFaceRoot.isVertical || wsPill.initAnimTrigger) ? 0 : (widget ? widget.s(15) : 15)
-                    Behavior on x { NumberAnimation { duration: 500; easing.type: Easing.OutBack } }
-                    Behavior on y { NumberAnimation { duration: 500; easing.type: Easing.OutBack } }
+                    Behavior on x { NumberAnimation { duration: Motion.expressive; easing.type: Easing.OutBack } }
+                    Behavior on y { NumberAnimation { duration: Motion.expressive; easing.type: Easing.OutBack } }
                 }
 
                 Component.onCompleted: {
@@ -187,7 +187,7 @@ Item {
                     onTriggered: wsPill.initAnimTrigger = true
                 }
 
-                Behavior on opacity { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
+                Behavior on opacity { NumberAnimation { duration: Motion.expressive; easing.type: Easing.OutCubic } }
 
                 Text {
                     anchors.centerIn: parent
@@ -204,7 +204,7 @@ Item {
                                 ? ThemeBackend.text
                                 : (ThemeBackend.overlay0 !== undefined ? ThemeBackend.overlay0 : ThemeBackend.subtext0)))
 
-                    Behavior on color { ColorAnimation { duration: 250 } }
+                    Behavior on color { ColorAnimation { duration: Motion.normal } }
                 }
 
                 MouseArea {

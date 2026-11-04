@@ -12,8 +12,8 @@ Row {
                 loops: Animation.Infinite
                 running: window.visible && parent.visible
                 PauseAnimation { duration: index * 100 }
-                NumberAnimation { from: 0; to: Scaler.s(-5); duration: 250; easing.type: Easing.OutSine }
-                NumberAnimation { from: Scaler.s(-5); to: 0; duration: 250; easing.type: Easing.InSine }
+                NumberAnimation { from: 0; to: Scaler.s(-5); duration: Motion.normal; easing.type: Easing.OutSine }
+                NumberAnimation { from: Scaler.s(-5); to: 0; duration: Motion.normal; easing.type: Easing.InSine }
                 PauseAnimation { duration: (2 - index) * 100 }
             }
         }

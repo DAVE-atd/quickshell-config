@@ -49,7 +49,7 @@ Item {
     property real shownFraction: progressFraction
     Behavior on shownFraction {
         enabled: !bar.isDragging
-        NumberAnimation { duration: 250; easing.type: Easing.Linear }
+        NumberAnimation { duration: Motion.normal; easing.type: Easing.Linear }
     }
 
     readonly property real progressX: pad + shownFraction * (width - 2 * pad)
@@ -78,7 +78,7 @@ Item {
 
         opacity: (bar.isDragging || mouseArea.containsMouse) ? 1.0 : (bar.playing ? 1.0 : 0.55)
         Behavior on opacity {
-            NumberAnimation { duration: 400; easing.type: Easing.OutQuad }
+            NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutQuad }
         }
 
         property color waveColor: bar.waveColor
@@ -110,10 +110,10 @@ Item {
         opacity: 1.0
         scale: bar.isDragging ? 1.25 : (mouseArea.containsMouse ? 1.15 : 1.0)
         Behavior on scale {
-            NumberAnimation { duration: 150; easing.type: Easing.OutBack }
+            NumberAnimation { duration: Motion.fast; easing.type: Easing.OutBack }
         }
         Behavior on color {
-            ColorAnimation { duration: 150 }
+            ColorAnimation { duration: Motion.fast }
         }
 
         layer.enabled: true

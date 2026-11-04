@@ -1552,8 +1552,8 @@ Item {
                 color: popupWindowRoot.isDisconnectHovered && popupWindowRoot.currentConn
                     ? ThemeBackend.red
                     : (popupWindowRoot.currentConn ? popupWindowRoot.activeColor : ThemeBackend.surface2)
-                Behavior on color { enabled: popupWindowRoot.visible; ColorAnimation { duration: 250; easing.type: Easing.OutQuad } }
-                Behavior on opacity { enabled: popupWindowRoot.visible && popupWindowRoot.introState >= 1.0; NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
+                Behavior on color { enabled: popupWindowRoot.visible; ColorAnimation { duration: Motion.normal; easing.type: Easing.OutQuad } }
+                Behavior on opacity { enabled: popupWindowRoot.visible && popupWindowRoot.introState >= 1.0; NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuad } }
                 visible: opacity > 0.005
             }
 
@@ -1565,8 +1565,8 @@ Item {
                 color: popupWindowRoot.isDisconnectHovered && popupWindowRoot.currentConn
                     ? Qt.darker(ThemeBackend.red, 1.25)
                     : (popupWindowRoot.currentConn ? popupWindowRoot.activeGradientSecondary : ThemeBackend.surface1)
-                Behavior on color { enabled: popupWindowRoot.visible; ColorAnimation { duration: 250; easing.type: Easing.OutQuad } }
-                Behavior on opacity { enabled: popupWindowRoot.visible && popupWindowRoot.introState >= 1.0; NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
+                Behavior on color { enabled: popupWindowRoot.visible; ColorAnimation { duration: Motion.normal; easing.type: Easing.OutQuad } }
+                Behavior on opacity { enabled: popupWindowRoot.visible && popupWindowRoot.introState >= 1.0; NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuad } }
                 visible: opacity > 0.002
             }
 
@@ -1606,7 +1606,7 @@ Item {
                         property real ringIntro: popupWindowRoot.easeOut(popupWindowRoot.animWin(popupWindowRoot.introState, 0.06 + index * 0.05, 0.22 + index * 0.05))
                         scale: 0.75 + 0.25 * ringIntro
                         opacity: (Object.keys(popupWindowRoot.disconnectingDevices).length > 0 ? 0.2 : (popupWindowRoot.currentConn ? 0.08 - (index * 0.02) : 0.03)) * ringIntro
-                        Behavior on opacity { enabled: popupWindowRoot.visible && popupWindowRoot.introState >= 1.0; NumberAnimation { duration: 150 } }
+                        Behavior on opacity { enabled: popupWindowRoot.visible && popupWindowRoot.introState >= 1.0; NumberAnimation { duration: Motion.fast } }
                     }
                 }
             }
@@ -1618,7 +1618,7 @@ Item {
                 z: 0
                 opacity: (popupWindowRoot.currentConn && popupWindowRoot.showInfoView && popupWindowRoot.currentPower && popupWindowRoot.lightningStrikeProg > 0.01) ? 1.0 : 0.0
                 visible: popupWindowRoot.visible && opacity > 0.01
-                Behavior on opacity { enabled: popupWindowRoot.visible; NumberAnimation { duration: 400 } }
+                Behavior on opacity { enabled: popupWindowRoot.visible; NumberAnimation { duration: Motion.ultraSlow } }
 
                 property real animTime: 0.0
                 NumberAnimation on animTime {

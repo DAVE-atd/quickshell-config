@@ -491,9 +491,9 @@ PanelWindow {
     property int switchGeneration: 0
     property bool userMoved: false
 
-    property int morphDuration:       300
-    property int morphDurationSwitch: 300
-    property int exitDuration:        180
+    property int morphDuration:       Motion.resize
+    property int morphDurationSwitch: Motion.resize
+    property int exitDuration:        Motion.close
 
     property real _animW: 1
     property real _animH: 1
@@ -687,8 +687,8 @@ PanelWindow {
             property real tuck: shown ? 0 : 1
             Behavior on tuck {
                 NumberAnimation {
-                    duration: contentStage.shown ? 320 : 200
-                    easing.type: contentStage.shown ? Easing.OutCubic : Easing.InCubic
+                    duration: contentStage.shown ? Motion.open : Motion.close
+                    easing.type: contentStage.shown ? Motion.openEasing : Motion.closeEasing
                 }
             }
             transform: Translate {
@@ -701,8 +701,8 @@ PanelWindow {
             scale: (masterWindow.isVisible || contentStage.isDrawer) ? 1.0 : 0.96
             Behavior on scale {
                 NumberAnimation {
-                    duration: masterWindow.isVisible ? 280 : 160
-                    easing.type: masterWindow.isVisible ? Easing.OutCubic : Easing.InCubic
+                    duration: masterWindow.isVisible ? Motion.open : Motion.close
+                    easing.type: masterWindow.isVisible ? Motion.openEasing : Motion.closeEasing
                 }
             }
 
@@ -710,8 +710,9 @@ PanelWindow {
             visible: masterWindow.isVisible || opacity > 0
             Behavior on opacity {
                 NumberAnimation {
-                    // A drawer opens solid (it slides in from under the bar instead)
-                    duration: masterWindow.isVisible ? (contentStage.isDrawer ? 0 : 200) : 140
+                    // A drawer opens solid (it slides in from under the bar instead) and stays solid while it
+                    // slides back, otherwise it would vanish halfway
+                    duration: contentStage.isDrawer ? (masterWindow.isVisible ? 0 : Motion.close) : (masterWindow.isVisible ? Motion.normal : Motion.fast)
                     easing.type: Easing.OutCubic
                 }
             }
@@ -743,19 +744,19 @@ PanelWindow {
 
         Behavior on x {
             enabled: !masterWindow.disableMorph
-            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Motion.resizeEasing }
         }
         Behavior on y {
             enabled: !masterWindow.disableMorph
-            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Motion.resizeEasing }
         }
         Behavior on width {
             enabled: !masterWindow.disableMorph
-            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Motion.resizeEasing }
         }
         Behavior on height {
             enabled: !masterWindow.disableMorph
-            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: masterWindow.morphDuration; easing.type: Motion.resizeEasing }
         }
     }
 
@@ -907,7 +908,7 @@ PanelWindow {
 
     Timer {
         id: exitSafetyTimer
-        interval: 450
+        interval: Motion.close + 200
         property int scheduledGeneration: -1
         onTriggered: {
             if (scheduledGeneration === masterWindow.switchGeneration && masterWindow.isClosing) {

@@ -168,22 +168,22 @@ Item {
             NumberAnimation { target: window; property: "introMain"; from: 0; to: 1.0; duration: 800; easing.type: Easing.OutQuart }
 
             SequentialAnimation {
-                PauseAnimation { duration: 150 }
+                PauseAnimation { duration: Motion.fast }
                 NumberAnimation { target: window; property: "introAmbient"; from: 0; to: 1.0; duration: 1000; easing.type: Easing.OutSine }
             }
 
             SequentialAnimation {
-                PauseAnimation { duration: 250 }
+                PauseAnimation { duration: Motion.normal }
                 NumberAnimation { target: window; property: "introClock"; from: 0; to: 1.0; duration: 900; easing.type: Easing.OutBack; easing.overshoot: 1.15 }
             }
 
             SequentialAnimation {
-                PauseAnimation { duration: 400 }
+                PauseAnimation { duration: Motion.ultraSlow }
                 NumberAnimation { target: window; property: "introCalendar"; from: 0; to: 1.0; duration: 850; easing.type: Easing.OutQuint }
             }
 
             SequentialAnimation {
-                PauseAnimation { duration: 400 }
+                PauseAnimation { duration: Motion.ultraSlow }
                 NumberAnimation { target: window; property: "introWeather"; from: 0; to: 1.0; duration: 850; easing.type: Easing.OutQuint }
             }
         }
@@ -194,16 +194,16 @@ Item {
         id: exitAnim
         running: false
         ParallelAnimation {
-            NumberAnimation { target: window; property: "introWeather"; to: 0; duration: 150; easing.type: Easing.InCubic }
-            NumberAnimation { target: window; property: "introCalendar"; to: 0; duration: 150; easing.type: Easing.InCubic }
+            NumberAnimation { target: window; property: "introWeather"; to: 0; duration: Motion.fast; easing.type: Easing.InCubic }
+            NumberAnimation { target: window; property: "introCalendar"; to: 0; duration: Motion.fast; easing.type: Easing.InCubic }
             SequentialAnimation {
                 PauseAnimation { duration: 30 }
                 NumberAnimation { target: window; property: "introClock"; to: 0; duration: 160; easing.type: Easing.InBack }
-                NumberAnimation { target: window; property: "introAmbient"; to: 0; duration: 150; easing.type: Easing.InQuad }
+                NumberAnimation { target: window; property: "introAmbient"; to: 0; duration: Motion.fast; easing.type: Easing.InQuad }
             }
             SequentialAnimation {
                 PauseAnimation { duration: 50 }
-                NumberAnimation { target: window; property: "introMain"; to: 0; duration: 150; easing.type: Easing.InQuart }
+                NumberAnimation { target: window; property: "introMain"; to: 0; duration: Motion.fast; easing.type: Easing.InQuart }
             }
         }
         ScriptAction {
@@ -302,10 +302,10 @@ Item {
     SequentialAnimation {
         id: weatherTransitionAnim
         ParallelAnimation {
-            NumberAnimation { target: window; property: "weatherContentOpacity"; to: 0.0; duration: 250; easing.type: Easing.InSine }
-            NumberAnimation { target: window; property: "weatherContentOffset"; to: -window.s(40) * weatherAnimDirection; duration: 250; easing.type: Easing.InSine }
-            NumberAnimation { target: window; property: "transitionSpin"; to: 180 * weatherAnimDirection; duration: 250; easing.type: Easing.InBack }
-            NumberAnimation { target: window; property: "transitionScale"; to: 0.8; duration: 250; easing.type: Easing.InCubic }
+            NumberAnimation { target: window; property: "weatherContentOpacity"; to: 0.0; duration: Motion.normal; easing.type: Easing.InSine }
+            NumberAnimation { target: window; property: "weatherContentOffset"; to: -window.s(40) * weatherAnimDirection; duration: Motion.normal; easing.type: Easing.InSine }
+            NumberAnimation { target: window; property: "transitionSpin"; to: 180 * weatherAnimDirection; duration: Motion.normal; easing.type: Easing.InBack }
+            NumberAnimation { target: window; property: "transitionScale"; to: 0.8; duration: Motion.normal; easing.type: Easing.InCubic }
         }
         ScriptAction {
             script: {
@@ -315,10 +315,10 @@ Item {
             }
         }
         ParallelAnimation {
-            NumberAnimation { target: window; property: "weatherContentOpacity"; to: 1.0; duration: 400; easing.type: Easing.OutQuart }
-            NumberAnimation { target: window; property: "weatherContentOffset"; to: 0.0; duration: 400; easing.type: Easing.OutQuart }
+            NumberAnimation { target: window; property: "weatherContentOpacity"; to: 1.0; duration: Motion.ultraSlow; easing.type: Easing.OutQuart }
+            NumberAnimation { target: window; property: "weatherContentOffset"; to: 0.0; duration: Motion.ultraSlow; easing.type: Easing.OutQuart }
             NumberAnimation { target: window; property: "transitionSpin"; to: 0.0; duration: 600; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
-            NumberAnimation { target: window; property: "transitionScale"; to: 1.0; duration: 500; easing.type: Easing.OutBack }
+            NumberAnimation { target: window; property: "transitionScale"; to: 1.0; duration: Motion.expressive; easing.type: Easing.OutBack }
         }
     }
 
@@ -376,8 +376,8 @@ Item {
     SequentialAnimation {
         id: calendarTransitionAnim
         ParallelAnimation {
-            NumberAnimation { target: window; property: "calendarContentOpacity"; to: 0.0; duration: 250; easing.type: Easing.InSine }
-            NumberAnimation { target: window; property: "calendarContentOffset"; to: -window.s(20) * calendarAnimDirection; duration: 250; easing.type: Easing.InSine }
+            NumberAnimation { target: window; property: "calendarContentOpacity"; to: 0.0; duration: Motion.normal; easing.type: Easing.InSine }
+            NumberAnimation { target: window; property: "calendarContentOffset"; to: -window.s(20) * calendarAnimDirection; duration: Motion.normal; easing.type: Easing.InSine }
         }
         ScriptAction {
             script: {
@@ -386,8 +386,8 @@ Item {
             }
         }
         ParallelAnimation {
-            NumberAnimation { target: window; property: "calendarContentOpacity"; to: 1.0; duration: 400; easing.type: Easing.OutQuart }
-            NumberAnimation { target: window; property: "calendarContentOffset"; to: 0.0; duration: 400; easing.type: Easing.OutQuart }
+            NumberAnimation { target: window; property: "calendarContentOpacity"; to: 1.0; duration: Motion.ultraSlow; easing.type: Easing.OutQuart }
+            NumberAnimation { target: window; property: "calendarContentOffset"; to: 0.0; duration: Motion.ultraSlow; easing.type: Easing.OutQuart }
         }
     }
 
@@ -738,7 +738,7 @@ Item {
 
                             property real baseScale: isHighlighted ? (0.80 + 0.55 * depthFactor) : (0.68 + 0.42 * depthFactor)
                             property real hoverScale: hrMa.containsMouse && !isHighlighted ? 1.04 : 1.0
-                            Behavior on hoverScale { NumberAnimation { duration: 150 } }
+                            Behavior on hoverScale { NumberAnimation { duration: Motion.fast } }
 
                             scale: baseScale * hoverScale
 
@@ -761,10 +761,10 @@ Item {
                                     tintAmount: isHighlighted ? 0.4 : 0.2
                                     tintStrength: 1.0
                                     press: hrMa.pressed ? 0.8 : (hrMa.containsMouse ? 0.25 : 0)
-                                    Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                                    Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
                                 }
 
-                                Behavior on color { ColorAnimation { duration: 150 } }
+                                Behavior on color { ColorAnimation { duration: Motion.fast } }
 
                                 ColumnLayout {
                                     anchors.centerIn: parent
@@ -777,7 +777,7 @@ Item {
                                         font.weight: Font.Bold
                                         font.pixelSize: window.s(11.5)
                                         color: (isHighlighted && !hourGlass.active) ? window.base : (hrMa.containsMouse || isHighlighted ? window.text : window.overlay1)
-                                        Behavior on color { ColorAnimation { duration: 150 } }
+                                        Behavior on color { ColorAnimation { duration: Motion.fast } }
                                     }
 
                                     Text {
@@ -852,7 +852,7 @@ Item {
                             textColor: window.text
                             opacity: window.targetMonthOffset !== 0 ? 1.0 : 0.0
                             visible: opacity > 0
-                            Behavior on opacity { NumberAnimation { duration: 250 } }
+                            Behavior on opacity { NumberAnimation { duration: Motion.normal } }
                             onClicked: { if (window.targetMonthOffset !== 0) window.setMonthOffset(0) }
                         }
 
@@ -1018,8 +1018,8 @@ Item {
                             style: Text.Outline
                             styleColor: window.isTempAnimating ? Qt.alpha(window.tempGlowColor, 0.5) : Qt.alpha(window.crust, 0.4)
 
-                            Behavior on color { ColorAnimation { duration: 250 } }
-                            Behavior on styleColor { ColorAnimation { duration: 250 } }
+                            Behavior on color { ColorAnimation { duration: Motion.normal } }
+                            Behavior on styleColor { ColorAnimation { duration: Motion.normal } }
                         }
 
                         Text {
@@ -1049,7 +1049,7 @@ Item {
                             Behavior on color { ColorAnimation { duration: 1000 } }
 
                             opacity: window.weatherContentOpacity
-                            Behavior on opacity { NumberAnimation { duration: 250 } }
+                            Behavior on opacity { NumberAnimation { duration: Motion.normal } }
                         }
                     }
 

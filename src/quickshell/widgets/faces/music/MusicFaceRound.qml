@@ -202,7 +202,7 @@ Item {
                 color: ThemeBackend.surface1
                 border.width: discContainer.borderWidth
                 border.color: (root.isMediaActive && MprisController.isPlaying) ? (ThemeBackend.mauve || "#cba6f7") : (ThemeBackend.overlay0 || "#6c7086")
-                Behavior on border.color { ColorAnimation { duration: 500 } }
+                Behavior on border.color { ColorAnimation { duration: Motion.expressive } }
 
                 NumberAnimation on rotation {
                     from: 0
@@ -253,7 +253,7 @@ Item {
                         opacity: (root.isMediaActive && artImg.status === Image.Ready && MprisController.artUrl !== "") ? 0.0 : 1.0
 
                         Behavior on opacity {
-                            NumberAnimation { duration: 400 }
+                            NumberAnimation { duration: Motion.ultraSlow }
                         }
 
                         Text {

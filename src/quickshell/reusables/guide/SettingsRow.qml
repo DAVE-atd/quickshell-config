@@ -227,7 +227,7 @@ Rectangle {
         id: highlightAnimation
         PropertyAction { target: root; property: "highlightFlash"; value: 0.0 }
         PauseAnimation { duration: root.highlightLeadInMs }
-        NumberAnimation { target: root; property: "highlightFlash"; from: 0.0; to: 1.0; duration: 400; easing.type: Easing.OutCubic }
+        NumberAnimation { target: root; property: "highlightFlash"; from: 0.0; to: 1.0; duration: Motion.ultraSlow; easing.type: Easing.OutCubic }
         PauseAnimation { duration: 1500 }
         NumberAnimation { target: root; property: "highlightFlash"; from: 1.0; to: 0.0; duration: 900; easing.type: Easing.InOutSine }
         ScriptAction { script: root.releaseRevealHolds() }
@@ -440,7 +440,7 @@ Rectangle {
 
     implicitHeight: contentCol.implicitHeight + root.verticalPadding * 2
 
-    Behavior on color { ColorAnimation { duration: 150 } }
+    Behavior on color { ColorAnimation { duration: Motion.fast } }
 
     GlassFill {
         id: rowGlass
@@ -450,8 +450,8 @@ Rectangle {
         tintColor: ThemeBackend.surface0
         tintAmount: (root.clickable && cardMa.containsMouse ? 0.34 : 0.26) * (root.dimmed ? 0.5 : 1.0)
         press: root.clickable && cardMa.containsMouse ? 0.2 : 0
-        Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-        Behavior on tintAmount { NumberAnimation { duration: 150 } }
+        Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
+        Behavior on tintAmount { NumberAnimation { duration: Motion.fast } }
     }
 
     MouseArea {
@@ -481,7 +481,7 @@ Rectangle {
         spacing: root.innerSpacing
 
         opacity: root.dimmed ? 0.4 : 1.0
-        Behavior on opacity { NumberAnimation { duration: 150 } }
+        Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 
         GridLayout {
             id: mainRow

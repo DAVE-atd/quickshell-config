@@ -119,7 +119,7 @@ Item {
     property bool isDraggingV: false
     Behavior on expandProgress {
         enabled: !root.isDraggingV
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
     }
 
     onExpandProgressChanged: {
@@ -486,7 +486,7 @@ Item {
                         height: isTargetNote ? (root.s(54) + (root.s(130) - root.s(54)) * root.expandProgress) : root.s(54)
 
                         scale: itemMouseArea.pressed ? 0.98 : 1.0
-                        Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutBack; easing.overshoot: 1.2 } }
+                        Behavior on scale { NumberAnimation { duration: Motion.fast; easing.type: Easing.OutBack; easing.overshoot: 1.2 } }
 
                         Rectangle {
                             id: noteItemCard
@@ -508,10 +508,10 @@ Item {
                                 tintColor: noteDelegateWrapper.isSelected ? ThemeBackend.mauve : ThemeBackend.surface1
                                 tintAmount: noteDelegateWrapper.isSelected ? 0.5 : 0.3
                                 press: itemMouseArea.pressed ? 0.8 : (itemMouseArea.containsMouse ? 0.2 : 0)
-                                Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                                Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
                             }
 
-                            Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                            Behavior on color { ColorAnimation { duration: Motion.fast; easing.type: Easing.OutCubic } }
 
                             RowLayout {
                                 anchors.fill: parent
@@ -532,7 +532,7 @@ Item {
                                             ? Qt.rgba(0, 0, 0, 0.15)
                                             : Qt.alpha(ThemeBackend.surface2, ThemeBackend.elementOpacity)
 
-                                        Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                                        Behavior on color { ColorAnimation { duration: Motion.fast; easing.type: Easing.OutCubic } }
 
                                         Text {
                                             anchors.centerIn: parent
@@ -541,7 +541,7 @@ Item {
                                             color: (noteDelegateWrapper.isSelected && !noteGlass.active) ? ThemeBackend.crust : (noteDelegateWrapper.isSelected ? ThemeBackend.text : ThemeBackend.subtext0)
                                             text: "󰈙"
 
-                                            Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                                            Behavior on color { ColorAnimation { duration: Motion.fast; easing.type: Easing.OutCubic } }
                                         }
                                     }
                                 }
@@ -560,7 +560,7 @@ Item {
                                         Layout.fillWidth: true
                                         elide: Text.ElideRight
 
-                                        Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                                        Behavior on color { ColorAnimation { duration: Motion.fast; easing.type: Easing.OutCubic } }
                                     }
 
                                     Text {
@@ -576,7 +576,7 @@ Item {
                                         Layout.fillWidth: true
                                         elide: Text.ElideRight
 
-                                        Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                                        Behavior on color { ColorAnimation { duration: Motion.fast; easing.type: Easing.OutCubic } }
                                     }
                                 }
 
@@ -590,7 +590,7 @@ Item {
                                         font.family: ThemeBackend.fontFamily
                                         font.pixelSize: root.s(10)
 
-                                        Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                                        Behavior on color { ColorAnimation { duration: Motion.fast; easing.type: Easing.OutCubic } }
                                     }
 
                                     FlipIcon {

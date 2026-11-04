@@ -84,7 +84,7 @@ RowLayout {
                             color: ThemeBackend.surface2
                             visible: !model.isTarget && !weekBarGlass.active
                             opacity: barMa.containsMouse ? 0.7 : 1.0
-                            Behavior on color { ColorAnimation { duration: 400; easing.type: Easing.OutCubic } }
+                            Behavior on color { ColorAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutCubic } }
                         }
 
                         Rectangle {
@@ -131,7 +131,7 @@ RowLayout {
                         font.pixelSize: rootObj.s(11)
                         color: ThemeBackend.liquidGlass ? "#ffffff" : (model.isTarget ? ThemeBackend.text : ThemeBackend.overlay0)
                         text: model.dayName
-                        Behavior on color { ColorAnimation { duration: 400 } }
+                        Behavior on color { ColorAnimation { duration: Motion.ultraSlow } }
                     }
                 }
             }

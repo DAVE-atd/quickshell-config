@@ -80,7 +80,7 @@ Rectangle {
                             font.pixelSize: rootObj.s(11)
                             color: (isTarget || chart.hoverDay === index) ? chart.tab.textMain : chart.tab.textSub
                             verticalAlignment: Text.AlignVCenter
-                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on color { ColorAnimation { duration: Motion.fast } }
                         }
                     }
                 }
@@ -110,11 +110,11 @@ Rectangle {
                             scale: chart.tab.isWeekView ? 1.0 : 0.5
                             Behavior on scale {
                                 NumberAnimation {
-                                    duration: 400 + (dayIdx * 30) + (hourIdx * 10)
+                                    duration: Motion.ultraSlow + (dayIdx * 30) + (hourIdx * 10)
                                     easing.type: Easing.OutBack
                                 }
                             }
-                            Behavior on color { ColorAnimation { duration: 500; easing.type: Easing.OutQuint } }
+                            Behavior on color { ColorAnimation { duration: Motion.expressive; easing.type: Easing.OutQuint } }
                         }
                     }
 

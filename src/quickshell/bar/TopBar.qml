@@ -38,7 +38,7 @@ Item {
 
     Behavior on fillAttachProgress {
         enabled: contentWrapper.layoutAnimationsEnabled
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
     }
 
     property bool fillDetached: isFill && !!barWindow && !barWindow.fillAttached
@@ -548,13 +548,13 @@ Item {
         y: contentWrapper.hideOffsetY
         Behavior on y {
             enabled: barWindow ? !barWindow.positionChanging : true
-            NumberAnimation { duration: 250; easing.type: Easing.OutQuint }
+            NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint }
         }
     }
 
     Behavior on opacity {
         enabled: barWindow ? (!barWindow.positionChanging && barWindow.startupCascadeFinished) : true
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
     }
 
     Rectangle {
@@ -585,17 +585,17 @@ Item {
 
         Behavior on x {
             enabled: contentWrapper.layoutAnimationsEnabled
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
         }
 
         Behavior on width {
             enabled: contentWrapper.layoutAnimationsEnabled
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
         }
 
         Behavior on opacity {
             enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
         }
     }
 
@@ -668,7 +668,7 @@ Item {
 
         Behavior on opacity {
             enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
         }
     }
 
@@ -691,7 +691,7 @@ Item {
 
         Behavior on opacity {
             enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
         }
     }
 
@@ -739,7 +739,7 @@ Item {
 
         Behavior on opacity {
             enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
         }
     }
 
@@ -813,17 +813,17 @@ Item {
 
             Behavior on x {
                 enabled: contentWrapper.layoutAnimationsEnabled
-                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
             }
 
             Behavior on width {
                 enabled: contentWrapper.layoutAnimationsEnabled
-                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
             }
 
             Behavior on opacity {
                 enabled: barWindow && !barWindow.positionChanging && barWindow.startupCascadeFinished && !contentWrapper.suppressAnimation
-                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
             }
         }
     }

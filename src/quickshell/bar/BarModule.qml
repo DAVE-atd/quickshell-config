@@ -71,25 +71,25 @@ Rectangle {
     x: targetX
     Behavior on x {
         enabled: barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging && !root.suppressAnimation && root.layoutAnimationsEnabled) : (!root.suppressAnimation && root.layoutAnimationsEnabled)
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
     }
 
     y: isVertical ? targetY : (barWindow ? barWindow.baseOffsetY + (barWindow.barHeight - height) / 2 : 0)
     Behavior on y {
         enabled: root.isVertical && (barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging && !root.suppressAnimation && root.layoutAnimationsEnabled) : (!root.suppressAnimation && root.layoutAnimationsEnabled))
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
     }
 
     width: isVertical ? thickness : targetWidth
     Behavior on width {
         enabled: !root.isVertical && (barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging && !root.suppressAnimation) : !root.suppressAnimation)
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
     }
 
     height: isVertical ? targetHeight : thickness
     Behavior on height {
         enabled: root.isVertical && (barWindow ? (barWindow.startupCascadeFinished && !barWindow.positionChanging && !root.suppressAnimation) : !root.suppressAnimation)
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
     }
 
     radius: ThemeBackend.borderRadius
@@ -130,7 +130,7 @@ Rectangle {
     enabled: moduleActive
 
     Behavior on opacity {
-        NumberAnimation { duration: 150; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.fast; easing.type: Easing.OutCubic }
     }
 
     readonly property url faceSource: BarModuleRegistry.faceFile(moduleId, variant)

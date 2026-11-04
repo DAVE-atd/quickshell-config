@@ -74,7 +74,7 @@ Flickable {
                     z: 1
 
                     color: (searchTabHoverGlass.active || !tabHeaderItemMa.containsMouse) ? "transparent" : Qt.alpha(ThemeBackend.surface1, 0.5)
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on color { ColorAnimation { duration: Motion.fast } }
 
                     GlassFill {
                         id: searchTabHoverGlass
@@ -87,7 +87,7 @@ Flickable {
                     }
 
                     scale: tabHeaderItemMa.pressed ? 0.98 : 1.0
-                    Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                    Behavior on scale { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
 
                     RowLayout {
                         anchors.fill: parent
@@ -117,7 +117,7 @@ Flickable {
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignVCenter
                             elide: Text.ElideRight
-                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on color { ColorAnimation { duration: Motion.fast } }
                         }
                     }
 
@@ -202,7 +202,7 @@ Flickable {
                                 }
                                 }
 
-                                Behavior on color { ColorAnimation { duration: 150 } }
+                                Behavior on color { ColorAnimation { duration: Motion.fast } }
 
                                 MouseArea {
                                     id: directItemMa
@@ -220,7 +220,7 @@ Flickable {
                                     anchors.bottomMargin: popup.s(6)
                                     spacing: popup.s(8)
 
-                                    Behavior on anchors.leftMargin { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                                    Behavior on anchors.leftMargin { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
 
                                     Rectangle {
                                         Layout.preferredWidth: popup.s(28)
@@ -251,7 +251,7 @@ Flickable {
                                             color: (directItemRow.isSelected && !ThemeBackend.liquidGlass) ? ThemeBackend.crust : ThemeBackend.text
                                             elide: Text.ElideRight
 
-                                            Behavior on color { ColorAnimation { duration: 150 } }
+                                            Behavior on color { ColorAnimation { duration: Motion.fast } }
                                         }
 
                                         Text {
@@ -263,7 +263,7 @@ Flickable {
                                             color: (directItemRow.isSelected && !ThemeBackend.liquidGlass) ? Qt.alpha(ThemeBackend.crust, 0.75) : ThemeBackend.subtext0
                                             elide: Text.ElideRight
 
-                                            Behavior on color { ColorAnimation { duration: 150 } }
+                                            Behavior on color { ColorAnimation { duration: Motion.fast } }
                                         }
                                     }
                                 }
@@ -290,7 +290,7 @@ Flickable {
                                     z: 1
 
                                     color: (searchSubHoverGlass.active || !subtabHeaderItemMa.containsMouse) ? "transparent" : Qt.alpha(ThemeBackend.surface1, 0.5)
-                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                    Behavior on color { ColorAnimation { duration: Motion.fast } }
 
                                     GlassFill {
                                         id: searchSubHoverGlass
@@ -303,7 +303,7 @@ Flickable {
                                     }
 
                                     scale: subtabHeaderItemMa.pressed ? 0.98 : 1.0
-                                    Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                                    Behavior on scale { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
 
                                     RowLayout {
                                         anchors.fill: parent
@@ -333,7 +333,7 @@ Flickable {
                                             Layout.fillWidth: true
                                             Layout.alignment: Qt.AlignVCenter
                                             elide: Text.ElideRight
-                                            Behavior on color { ColorAnimation { duration: 150 } }
+                                            Behavior on color { ColorAnimation { duration: Motion.fast } }
                                         }
                                     }
 
@@ -418,7 +418,7 @@ Flickable {
                                                 }
                                 }
 
-                                                Behavior on color { ColorAnimation { duration: 150 } }
+                                                Behavior on color { ColorAnimation { duration: Motion.fast } }
 
                                                 MouseArea {
                                                     id: subItemMa
@@ -436,7 +436,7 @@ Flickable {
                                                     anchors.bottomMargin: popup.s(6)
                                                     spacing: popup.s(8)
 
-                                                    Behavior on anchors.leftMargin { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                                                    Behavior on anchors.leftMargin { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
 
                                                     Rectangle {
                                         Layout.preferredWidth: popup.s(28)
@@ -467,7 +467,7 @@ Flickable {
                                                             color: (subItemRow.isSelected && !ThemeBackend.liquidGlass) ? ThemeBackend.crust : ThemeBackend.text
                                                             elide: Text.ElideRight
 
-                                                            Behavior on color { ColorAnimation { duration: 150 } }
+                                                            Behavior on color { ColorAnimation { duration: Motion.fast } }
                                                         }
 
                                                         Text {
@@ -479,7 +479,7 @@ Flickable {
                                                             color: (subItemRow.isSelected && !ThemeBackend.liquidGlass) ? Qt.alpha(ThemeBackend.crust, 0.75) : ThemeBackend.subtext0
                                                             elide: Text.ElideRight
 
-                                                            Behavior on color { ColorAnimation { duration: 150 } }
+                                                            Behavior on color { ColorAnimation { duration: Motion.fast } }
                                                         }
                                                     }
                                                 }

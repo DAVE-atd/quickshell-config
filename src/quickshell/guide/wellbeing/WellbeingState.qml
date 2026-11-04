@@ -112,23 +112,23 @@ GuideTab {
         id: introAnim
 
         SequentialAnimation {
-            PauseAnimation { duration: 100 }
+            PauseAnimation { duration: Motion.ultraFast }
             NumberAnimation { target: tabRoot; property: "introHeader"; from: 0; to: 1.0; duration: 800; easing.type: Easing.OutBack; easing.overshoot: 1.0 }
         }
         SequentialAnimation {
-            PauseAnimation { duration: 250 }
+            PauseAnimation { duration: Motion.normal }
             NumberAnimation { target: tabRoot; property: "introStats"; from: 0; to: 1.0; duration: 900; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
         }
         SequentialAnimation {
-            PauseAnimation { duration: 400 }
+            PauseAnimation { duration: Motion.ultraSlow }
             NumberAnimation { target: tabRoot; property: "introMidLeft"; from: 0; to: 1.0; duration: 850; easing.type: Easing.OutQuart }
         }
         SequentialAnimation {
-            PauseAnimation { duration: 250 }
+            PauseAnimation { duration: Motion.normal }
             NumberAnimation { target: tabRoot; property: "introAppBars"; from: 0; to: 1.0; duration: 1300; easing.type: Easing.OutQuart }
         }
         SequentialAnimation {
-            PauseAnimation { duration: 400 }
+            PauseAnimation { duration: Motion.ultraSlow }
             NumberAnimation { target: tabRoot; property: "introMidRight"; from: 0; to: 1.0; duration: 850; easing.type: Easing.OutQuart }
         }
         SequentialAnimation {

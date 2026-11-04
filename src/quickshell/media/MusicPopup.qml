@@ -186,21 +186,21 @@ MusicEqualizerState {
             target: popupRoot
             property: "actionBtnMorph"
             to: 2.0
-            duration: 400
+            duration: Motion.ultraSlow
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: popupRoot
             property: "presetSlideProgress"
             to: 1.0
-            duration: 400
+            duration: Motion.ultraSlow
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: popupRoot
             property: "audioHeaderProgress"
             to: 0.0
-            duration: 250
+            duration: Motion.normal
             easing.type: Easing.OutCubic
         }
     }
@@ -212,21 +212,21 @@ MusicEqualizerState {
             target: popupRoot
             property: "actionBtnMorph"
             to: 1.0
-            duration: 400
+            duration: Motion.ultraSlow
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: popupRoot
             property: "presetSlideProgress"
             to: 1.0
-            duration: 400
+            duration: Motion.ultraSlow
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: popupRoot
             property: "audioHeaderProgress"
             to: 1.0
-            duration: 250
+            duration: Motion.normal
             easing.type: Easing.OutCubic
         }
     }
@@ -238,21 +238,21 @@ MusicEqualizerState {
             target: popupRoot
             property: "actionBtnMorph"
             to: 0.0
-            duration: 400
+            duration: Motion.ultraSlow
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: popupRoot
             property: "presetSlideProgress"
             to: 0.0
-            duration: 400
+            duration: Motion.ultraSlow
             easing.type: Easing.OutCubic
         }
         NumberAnimation {
             target: popupRoot
             property: "audioHeaderProgress"
             to: 0.0
-            duration: 250
+            duration: Motion.normal
             easing.type: Easing.OutCubic
         }
     }
@@ -287,7 +287,7 @@ MusicEqualizerState {
         }
 
         SequentialAnimation {
-            PauseAnimation { duration: 150 }
+            PauseAnimation { duration: Motion.fast }
             NumberAnimation { target: popupRoot; property: "audioIntroDynamics"; from: 0; to: 1.0; duration: 560; easing.type: Easing.OutQuart }
         }
     }
@@ -311,7 +311,7 @@ MusicEqualizerState {
         }
 
         SequentialAnimation {
-            PauseAnimation { duration: 150 }
+            PauseAnimation { duration: Motion.fast }
             NumberAnimation { target: popupRoot; property: "introText"; from: 0; to: 1.0; duration: 760; easing.type: Easing.OutQuart }
         }
 
@@ -346,7 +346,7 @@ MusicEqualizerState {
         running: false
         ParallelAnimation {
             NumberAnimation { target: popupRoot; property: "introPresets"; to: 0.0; duration: 130; easing.type: Easing.InBack }
-            NumberAnimation { target: popupRoot; property: "introEqSliders"; to: 0.0; duration: 150; easing.type: Easing.InExpo }
+            NumberAnimation { target: popupRoot; property: "introEqSliders"; to: 0.0; duration: Motion.fast; easing.type: Easing.InExpo }
             SequentialAnimation {
                 PauseAnimation { duration: 30 }
                 NumberAnimation { target: popupRoot; property: "introEqHeader"; to: 0.0; duration: 130; easing.type: Easing.InCubic }
@@ -354,9 +354,9 @@ MusicEqualizerState {
             }
             SequentialAnimation {
                 PauseAnimation { duration: 50 }
-                NumberAnimation { target: popupRoot; property: "introControls"; to: 0.0; duration: 150; easing.type: Easing.InBack }
-                NumberAnimation { target: popupRoot; property: "introText"; to: 0.0; duration: 150; easing.type: Easing.InCubic }
-                NumberAnimation { target: popupRoot; property: "introCover"; to: 0.0; duration: 150; easing.type: Easing.InBack }
+                NumberAnimation { target: popupRoot; property: "introControls"; to: 0.0; duration: Motion.fast; easing.type: Easing.InBack }
+                NumberAnimation { target: popupRoot; property: "introText"; to: 0.0; duration: Motion.fast; easing.type: Easing.InCubic }
+                NumberAnimation { target: popupRoot; property: "introCover"; to: 0.0; duration: Motion.fast; easing.type: Easing.InBack }
             }
             SequentialAnimation {
                 PauseAnimation { duration: 70 }

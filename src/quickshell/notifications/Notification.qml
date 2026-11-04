@@ -18,7 +18,7 @@ Rectangle {
     property real expandProgress: expanded ? 1.0 : 0.0
     Behavior on expandProgress {
         enabled: !cardHover.draggingV
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
     }
 
     property bool showIcon: true
@@ -198,7 +198,7 @@ Rectangle {
         property: "dragX"
         from: typeRoot.dragX
         to: 0
-        duration: 250
+        duration: Motion.normal
         easing.type: Easing.OutCubic
     }
 
@@ -208,7 +208,7 @@ Rectangle {
         property: "dragY"
         from: typeRoot.dragY
         to: 0
-        duration: 250
+        duration: Motion.normal
         easing.type: Easing.OutCubic
     }
 
@@ -217,7 +217,7 @@ Rectangle {
         target: typeRoot
         property: "dragX"
         from: typeRoot.dragX
-        duration: 250
+        duration: Motion.normal
         easing.type: Easing.OutQuad
         onFinished: {
             doClose();
@@ -438,10 +438,10 @@ Rectangle {
 
         Behavior on implicitHeight {
             enabled: !cardHover.draggingV
-            NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
         }
-        Behavior on color { enabled: !cardHover.draggingH && !cardHover.draggingV; ColorAnimation { duration: 150 } }
-        Behavior on scale { enabled: !cardHover.draggingH && !cardHover.draggingV; NumberAnimation { duration: 150; easing.type: Easing.OutQuint } }
+        Behavior on color { enabled: !cardHover.draggingH && !cardHover.draggingV; ColorAnimation { duration: Motion.fast } }
+        Behavior on scale { enabled: !cardHover.draggingH && !cardHover.draggingV; NumberAnimation { duration: Motion.fast; easing.type: Easing.OutQuint } }
 
         readonly property real dragFraction: Math.min(1.0, Math.abs(typeRoot.dragX) / Math.max(1, typeRoot.width * 0.75))
         transform: [
@@ -466,7 +466,7 @@ Rectangle {
 
             Behavior on opacity {
                 enabled: !pulseAnim.running
-                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
             }
 
             property real pulseFactor: 1.0
@@ -588,7 +588,7 @@ Rectangle {
                         radius: parent.boxRadius
                         color: iconBoxGlass.active ? "transparent" : ThemeBackend.faded(typeRoot.urgency === 2 ? Qt.tint(ThemeBackend.surface2, Qt.rgba(urgencyGlow.deepRed.r, urgencyGlow.deepRed.g, urgencyGlow.deepRed.b, 0.12)) : ThemeBackend.surface2)
 
-                        Behavior on color { ColorAnimation { duration: 250 } }
+                        Behavior on color { ColorAnimation { duration: Motion.normal } }
 
                         GlassFill {
                             id: iconBoxGlass

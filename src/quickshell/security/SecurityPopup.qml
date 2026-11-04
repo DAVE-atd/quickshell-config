@@ -30,10 +30,10 @@ Item {
         if (visible) { ClamavService.unseen = false; forceActiveFocus(); intro = 0; introAnim.restart() }
         else { introAnim.stop(); exitAnim.stop(); intro = 0 }
     }
-    NumberAnimation { id: introAnim; target: root; property: "intro"; to: 1; duration: 260; easing.type: Easing.OutCubic }
+    NumberAnimation { id: introAnim; target: root; property: "intro"; to: 1; duration: Motion.open; easing.type: Motion.openEasing }
     SequentialAnimation {
         id: exitAnim
-        NumberAnimation { target: root; property: "intro"; to: 0; duration: 160; easing.type: Easing.InCubic }
+        NumberAnimation { target: root; property: "intro"; to: 0; duration: Motion.close; easing.type: Motion.closeEasing }
         ScriptAction { script: { if (root.exitCallback) { let cb = root.exitCallback; root.exitCallback = null; cb() } } }
     }
 
@@ -201,7 +201,7 @@ Item {
                                 text: !cs.enabled ? "󰦞" : (cs.unseen || cs.scanState === "infected") ? "󰻌" : cs.scanning ? "󰶚" : "󰕥"
                                 color: root.protColor
                                 font.pixelSize: s(46)
-                                Behavior on color { ColorAnimation { duration: 250 } }
+                                Behavior on color { ColorAnimation { duration: Motion.normal } }
                             }
                         }
 
@@ -282,7 +282,7 @@ Item {
                                 GradientStop { position: 1; color: ThemeBackend.blue }
                             }
                             scale: scanHov.pressed ? 0.96 : 1
-                            Behavior on scale { NumberAnimation { duration: 150 } }
+                            Behavior on scale { NumberAnimation { duration: Motion.fast } }
                             Row {
                                 anchors.centerIn: parent; spacing: s(7)
                                 Text {
@@ -536,13 +536,13 @@ Item {
         border.color: checked ? Qt.darker(ThemeBackend.blue, 1.2) : Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.2)
         border.width: 1
         opacity: cs.busy ? 0.75 : 1
-        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: Motion.fast } }
         Rectangle {
             width: root.s(18); height: width; radius: width / 2
             anchors.verticalCenter: parent.verticalCenter
             x: sw.checked ? sw.width - width - root.s(3) : root.s(3)
             color: "white"
-            Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.OutBack } }
+            Behavior on x { NumberAnimation { duration: Motion.fast; easing.type: Easing.OutBack } }
         }
         HoverHandler { id: swHov; cursorShape: Qt.PointingHandCursor }
         MouseArea { anchors.fill: parent; onClicked: sw.toggled() }

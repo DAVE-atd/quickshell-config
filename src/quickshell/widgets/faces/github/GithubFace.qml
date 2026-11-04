@@ -797,12 +797,12 @@ Item {
                                             height: root.cellSize
                                             radius: Math.max(2, Math.min(Scaler.s(4), Math.round(root.cellSize * 0.22)))
                                             color: cellBox.dayObj === null ? "transparent" : (tileMa.pressed ? Qt.darker(cellBox.baseColor, 1.12) : (cellBox.isHovered ? Qt.lighter(cellBox.baseColor, 1.12) : cellBox.baseColor))
-                                            Behavior on color { ColorAnimation { duration: 150 } }
+                                            Behavior on color { ColorAnimation { duration: Motion.fast } }
 
                                             scale: (cellBox.dayObj === null ? 1.0 : (tileMa.pressed ? 1.08 : (cellBox.isHovered ? 1.04 : 1.0))) * cellBox.popScale
                                             Behavior on scale {
                                                 NumberAnimation {
-                                                    duration: 250
+                                                    duration: Motion.normal
                                                     easing.type: Easing.OutQuint
                                                 }
                                             }
@@ -820,7 +820,7 @@ Item {
                                                     target: cellBox
                                                     property: "popScale"
                                                     to: 1.0
-                                                    duration: 400
+                                                    duration: Motion.ultraSlow
                                                     easing.type: Easing.OutQuint
                                                 }
                                             }
@@ -835,7 +835,7 @@ Item {
                                                 PropertyAnimation on opacity {
                                                     id: tileFlashAnim
                                                     to: 0
-                                                    duration: 400
+                                                    duration: Motion.ultraSlow
                                                     easing.type: Easing.OutExpo
                                                 }
                                             }

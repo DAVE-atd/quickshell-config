@@ -131,12 +131,12 @@ Item {
 
                         color: Qt.alpha(actionMa.containsMouse ? (ThemeBackend.surface2 !== undefined ? ThemeBackend.surface2 : Qt.lighter(ThemeBackend.surface1, 1.12)) : ThemeBackend.surface1, ThemeBackend.elementOpacity)
                         Behavior on color {
-                            ColorAnimation { duration: 250 }
+                            ColorAnimation { duration: Motion.normal }
                         }
 
                         scale: actionMa.pressed ? (0.98 - (0.01 * weight)) : (actionMa.containsMouse ? 1.02 : 1.0)
                         Behavior on scale {
-                            NumberAnimation { duration: 400; easing.type: Easing.OutQuart }
+                            NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutQuart }
                         }
 
                         FluidWave {
@@ -170,7 +170,7 @@ Item {
                             PropertyAnimation on opacity {
                                 id: cardFlashAnim
                                 to: 0
-                                duration: 500
+                                duration: Motion.expressive
                                 easing.type: Easing.OutExpo
                             }
                         }
@@ -182,7 +182,7 @@ Item {
                             color: actionMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0
                             text: actionCapsule.icon
                             Behavior on color {
-                                ColorAnimation { duration: 150 }
+                                ColorAnimation { duration: Motion.fast }
                             }
                         }
 

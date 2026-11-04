@@ -52,18 +52,18 @@ Item {
             shadow: 1
             press: qaMa.pressed ? 1 : (qaMa.containsMouse ? 0.25 : 0)
             pulse: qaBtn.togglePulse
-            Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-            Behavior on tintAmount { NumberAnimation { duration: 150 } }
+            Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
+            Behavior on tintAmount { NumberAnimation { duration: Motion.fast } }
         }
         Behavior on color {
             enabled: view.panel.visible
-            ColorAnimation { duration: 150 }
+            ColorAnimation { duration: Motion.fast }
         }
 
         scale: qaMa.pressed ? 0.95 : (qaMa.containsMouse ? 1.01 : 1.0)
         Behavior on scale {
             enabled: view.panel.visible
-            NumberAnimation { duration: 250; easing.type: Easing.OutQuart }
+            NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuart }
         }
 
         Text {
@@ -75,7 +75,7 @@ Item {
             text: qaBtn.iconText
             Behavior on color {
                 enabled: view.panel.visible
-                ColorAnimation { duration: 150 }
+                ColorAnimation { duration: Motion.fast }
             }
         }
 

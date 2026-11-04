@@ -27,10 +27,10 @@ Item {
         if (visible) { forceActiveFocus(); intro = 0; introAnim.restart() }
         else { introAnim.stop(); exitAnim.stop(); intro = 0 }
     }
-    NumberAnimation { id: introAnim; target: root; property: "intro"; to: 1; duration: 260; easing.type: Easing.OutCubic }
+    NumberAnimation { id: introAnim; target: root; property: "intro"; to: 1; duration: Motion.open; easing.type: Motion.openEasing }
     SequentialAnimation {
         id: exitAnim
-        NumberAnimation { target: root; property: "intro"; to: 0; duration: 160; easing.type: Easing.InCubic }
+        NumberAnimation { target: root; property: "intro"; to: 0; duration: Motion.close; easing.type: Motion.closeEasing }
         ScriptAction { script: { if (root.exitCallback) { let cb = root.exitCallback; root.exitCallback = null; cb() } } }
     }
 

@@ -108,7 +108,7 @@ Item {
 
             Behavior on opacity {
                 enabled: !screenRoot.isUnlocking
-                NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+                NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic }
             }
 
             onStatusChanged: {
@@ -136,7 +136,7 @@ Item {
         blur: screenRoot.inputActive ? 1.0 : 0.72
         Behavior on blur {
             enabled: !screenRoot.isPlayingIntro && !screenRoot.isUnlocking
-            NumberAnimation { duration: 500; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: Motion.expressive; easing.type: Easing.OutCubic }
         }
         opacity: backdrop.wallpaperReveal
         visible: opacity > 0.01

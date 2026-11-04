@@ -110,7 +110,7 @@ PanelWindow {
     property real animatedLauncherHeight: targetLauncherHeight
     Behavior on animatedLauncherHeight {
         NumberAnimation {
-            duration: 250
+            duration: Motion.normal
             easing.type: Easing.OutCubic
         }
     }
@@ -800,7 +800,7 @@ PanelWindow {
                         id: scrollAnim
                         target: clipList
                         property: "contentY"
-                        duration: 250
+                        duration: Motion.normal
                         easing.type: Easing.OutCubic
                     }
 
@@ -956,7 +956,7 @@ PanelWindow {
                                 property: "opacity"
                                 from: 0.0
                                 to: 1.0
-                                duration: 250
+                                duration: Motion.normal
                                 easing.type: Easing.OutCubic
                             }
                             NumberAnimation {
@@ -1027,14 +1027,14 @@ PanelWindow {
                             }
 
                             scale: clipCardMa.pressed ? 0.98 : 1.0
-                            Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                            Behavior on scale { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
 
                             property bool itemExpanded: false
                             property real itemExpandProgress: itemExpanded ? 1.0 : 0.0
                             Behavior on itemExpandProgress {
                                 enabled: !clipCardMa.draggingV
                                 NumberAnimation {
-                                    duration: 250
+                                    duration: Motion.normal
                                     easing.type: Easing.OutQuart
                                     onRunningChanged: {
                                         if (!running && clipDelegateWrapper.isSelected) {
@@ -1060,7 +1060,7 @@ PanelWindow {
                                 target: clipDelegateWrapper
                                 property: "dragX"
                                 to: clipList.width * 1.2
-                                duration: 250
+                                duration: Motion.normal
                                 easing.type: Easing.OutQuad
                             }
                             Timer {
@@ -1109,7 +1109,7 @@ PanelWindow {
                                 property: "dragX"
                                 from: clipDelegateWrapper.dragX
                                 to: 0
-                                duration: 250
+                                duration: Motion.normal
                                 easing.type: Easing.OutCubic
                             }
 
@@ -1119,7 +1119,7 @@ PanelWindow {
                                 property: "dragX"
                                 from: clipDelegateWrapper.dragX
                                 to: 0
-                                duration: 250
+                                duration: Motion.normal
                                 easing.type: Easing.OutQuad
                                 onFinished: clipboardWindow.deleteClip(clipDelegateWrapper.clipIdString, index)
                             }
@@ -1173,7 +1173,7 @@ PanelWindow {
                                 }
                                 clip: true
 
-                                Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                                Behavior on color { ColorAnimation { duration: Motion.fast; easing.type: Easing.OutCubic } }
 
                                 GlassFill {
                                     id: rowGlass
@@ -1220,7 +1220,7 @@ PanelWindow {
                                     radius: clipDelegateCard.radius
                                     color: Qt.rgba(0, 0, 0, clipCardMa.containsMouse ? 0.15 : 0.0)
                                     visible: clipDelegateCard.isImage
-                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                    Behavior on color { ColorAnimation { duration: Motion.fast } }
                                 }
 
                                 Rectangle {
@@ -1231,7 +1231,7 @@ PanelWindow {
                                     z: 10
                                     visible: clipDelegateCard.isImage
 
-                                    Behavior on color { ColorAnimation { duration: 150 } }
+                                    Behavior on color { ColorAnimation { duration: Motion.fast } }
                                 }
 
                                 MouseArea {
@@ -1352,7 +1352,7 @@ PanelWindow {
                                     visible: (clipDelegateCard.isImage || clipDelegateWrapper.itemExpandProgress < 0.99) && opacity > 0.001
                                     opacity: clipDelegateCard.isImage ? 1.0 : Math.max(0.0, 1.0 - clipDelegateWrapper.itemExpandProgress * 2.0)
 
-                                    Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                                    Behavior on color { ColorAnimation { duration: Motion.fast; easing.type: Easing.OutCubic } }
 
                                     GlassFill {
                                         anchors.fill: parent
@@ -1386,7 +1386,7 @@ PanelWindow {
                                         text: model.type === "image" ? "󰋩" : "󰈙"
                                         visible: model.type !== "image" || (!model.content || clipThumbImg.status !== Image.Ready)
 
-                                        Behavior on color { ColorAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                                        Behavior on color { ColorAnimation { duration: Motion.fast; easing.type: Easing.OutCubic } }
                                     }
                                 }
 

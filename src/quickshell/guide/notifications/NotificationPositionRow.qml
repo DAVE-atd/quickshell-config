@@ -52,8 +52,8 @@ SettingsRow {
         opacity: row.tab.isCustomPos ? 1.0 : 0.0
         visible: opacity > 0.001
 
-        Behavior on implicitWidth { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-        Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+        Behavior on implicitWidth { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
 
         Text {
             id: notifCustomPosText
@@ -132,8 +132,8 @@ SettingsRow {
             property real openProgress: isOpen ? 1 : 0
             implicitHeight: selectorBox.implicitHeight * openProgress
 
-            Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-            Behavior on openProgress { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
+            Behavior on openProgress { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
 
             Rectangle {
                 id: selectorBox

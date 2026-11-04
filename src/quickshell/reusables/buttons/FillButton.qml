@@ -89,7 +89,7 @@ Item {
                 font.family: ThemeBackend.iconFont
                 font.pixelSize: root.iconFontSize
                 color: bRoot.contentTextColor
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: Motion.fast } }
 
                 property real iconXInBRoot: contentRow.x + iconText.x + (iconText.width / 2)
                 property real charNorm: bRoot.width > 0 ? iconXInBRoot / bRoot.width : 0
@@ -123,7 +123,7 @@ Item {
                     font.pixelSize: root.textFontSize
                     color: bRoot.contentTextColor
                     horizontalAlignment: root.contentAlignment === Qt.AlignHCenter ? Text.AlignHCenter : I18n.textAlignment
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on color { ColorAnimation { duration: Motion.fast } }
                 }
 
                 Row {
@@ -161,7 +161,7 @@ Item {
                                         property: "animScale"
                                         from: 0.55
                                         to: 1.0
-                                        duration: 250
+                                        duration: Motion.normal
                                         easing.type: Easing.OutBack
                                         easing.overshoot: 1.35
                                     }
@@ -170,7 +170,7 @@ Item {
                                         property: "animY"
                                         from: 4
                                         to: 0
-                                        duration: 250
+                                        duration: Motion.normal
                                         easing.type: Easing.OutBack
                                         easing.overshoot: 1.25
                                     }
@@ -179,7 +179,7 @@ Item {
                                         property: "animRotation"
                                         from: (charSlot.index % 2 === 0 ? -10 : 10)
                                         to: 0
-                                        duration: 250
+                                        duration: Motion.normal
                                         easing.type: Easing.OutCubic
                                     }
                                     NumberAnimation {
@@ -187,7 +187,7 @@ Item {
                                         property: "opacity"
                                         from: 0.0
                                         to: 1.0
-                                        duration: 150
+                                        duration: Motion.fast
                                         easing.type: Easing.OutQuad
                                     }
                                 }
@@ -201,7 +201,7 @@ Item {
                                 font.weight: Font.Bold
                                 font.pixelSize: root.textFontSize
                                 color: bRoot.contentTextColor
-                                Behavior on color { ColorAnimation { duration: 150 } }
+                                Behavior on color { ColorAnimation { duration: Motion.fast } }
                             }
 
                             transform: [
@@ -231,7 +231,7 @@ Item {
                     color: bRoot.contentTextColor
                     horizontalAlignment: root.contentAlignment === Qt.AlignHCenter ? Text.AlignHCenter : I18n.textAlignment
                     opacity: 0.8
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on color { ColorAnimation { duration: Motion.fast } }
 
                     property real subTextXInBRoot: contentRow.x + textCol.x + subTextItem.x + (subTextItem.width / 2)
                     property real charNorm: bRoot.width > 0 ? subTextXInBRoot / bRoot.width : 0
@@ -263,7 +263,7 @@ Item {
         scale: btnShape.scale
         opacity: root.isTriggered ? 0.06 : (root.isHoveredOrHighlighted ? 0.24 : 0.14)
         z: -2
-        Behavior on opacity { NumberAnimation { duration: 150 } }
+        Behavior on opacity { NumberAnimation { duration: Motion.fast } }
     }
 
     Rectangle {
@@ -276,7 +276,7 @@ Item {
         scale: btnShape.scale
         opacity: root.isHoveredOrHighlighted && !root.isTriggered ? 0.18 : 0.0
         z: -2
-        Behavior on opacity { NumberAnimation { duration: 250 } }
+        Behavior on opacity { NumberAnimation { duration: Motion.normal } }
     }
 
     Rectangle {
@@ -286,7 +286,7 @@ Item {
         clip: !glass.active
         color: glass.active ? "transparent" : Qt.alpha(root.isHoveredOrHighlighted ? root.hoverColor : root.baseColor, Math.min(1, root.bgOpacity * (root.isHoveredOrHighlighted ? root.hoverColor.a : root.baseColor.a)))
 
-        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: Motion.fast } }
 
         GlassFill {
             id: glass
@@ -294,20 +294,20 @@ Item {
             shadow: 1
             press: (btnMa.pressed && !root.isTriggered) ? 0.6 + 0.4 * root.fillLevel : (root.isHoveredOrHighlighted ? 0.25 : 0)
             pulse: Math.min(1, root.flashOpacity * 2.5)
-            Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
             radius: root.effectiveRadius
             tintColor: root.isHoveredOrHighlighted ? root.hoverColor : root.baseColor
             tintAmount: (root.isHoveredOrHighlighted ? 0.4 : 0.28) * root.bgOpacity
-            Behavior on tintAmount { NumberAnimation { duration: 150 } }
+            Behavior on tintAmount { NumberAnimation { duration: Motion.fast } }
         }
 
         scale: (btnMa.pressed && !root.isTriggered ? 0.96 : (root.isHoveredOrHighlighted ? 1.02 : 1.0)) * root.popScale
-        Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+        Behavior on scale { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
 
         SequentialAnimation {
             id: btnPopAnim
             NumberAnimation { target: root; property: "popScale"; to: 0.95; duration: 110; easing.type: Easing.OutQuad }
-            NumberAnimation { target: root; property: "popScale"; to: 1.0; duration: 400; easing.type: Easing.OutQuint }
+            NumberAnimation { target: root; property: "popScale"; to: 1.0; duration: Motion.ultraSlow; easing.type: Easing.OutQuint }
         }
 
         FluidWave {
@@ -342,7 +342,7 @@ Item {
             bodyAlpha: 0.4
             visible: glass.active && root.fillLevel > 0.001
             property real lift: (root.fillLevel > 0.001 && root.fillLevel < 0.999) ? 1.0 : 0.0
-            Behavior on lift { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on lift { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
             transformOrigin: Item.Left
             scale: 1.0 + 0.07 * lift
         }
@@ -353,7 +353,7 @@ Item {
             color: "#ffffff"
             opacity: root.flashOpacity
             visible: !glass.active
-            PropertyAnimation on opacity { id: btnFlashAnim; to: 0; duration: 400; easing.type: Easing.OutExpo }
+            PropertyAnimation on opacity { id: btnFlashAnim; to: 0; duration: Motion.ultraSlow; easing.type: Easing.OutExpo }
         }
 
         ButtonContent {

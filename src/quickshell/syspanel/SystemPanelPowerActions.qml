@@ -53,17 +53,17 @@ RowLayout {
                 tintAmount: 0.3
                 press: (actionMa.pressed && !isDisabled) ? 0.6 + 0.4 * actionCapsule.fillLevel : ((actionMa.containsMouse && !isDisabled) ? 0.25 : 0)
                 pulse: Math.min(1, actionCapsule.flashOpacity * 2.5)
-                Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
             }
             Behavior on color {
                 enabled: panel.visible
-                ColorAnimation { duration: 250 }
+                ColorAnimation { duration: Motion.normal }
             }
 
             scale: (actionMa.pressed && !isDisabled) ? (0.98 - (0.01 * weight)) : ((actionMa.containsMouse && !isDisabled) ? 1.02 : 1.0)
             Behavior on scale {
                 enabled: panel.visible
-                NumberAnimation { duration: 400; easing.type: Easing.OutQuart }
+                NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutQuart }
             }
 
             property real fillLevel: 0.0
@@ -136,7 +136,7 @@ RowLayout {
                 bodyAlpha: 0.4
                 visible: capsuleGlass.active && actionCapsule.fillLevel > 0.001
                 property real lift: (actionCapsule.fillLevel > 0.001 && actionCapsule.fillLevel < 0.999) ? 1.0 : 0.0
-                Behavior on lift { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                Behavior on lift { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
                 scale: 1.0 + 0.07 * lift
             }
 
@@ -144,7 +144,7 @@ RowLayout {
                 anchors.fill: parent; radius: actionCapsule.radius; color: "#ffffff"
                 opacity: actionCapsule.flashOpacity
                 visible: !capsuleGlass.active
-                PropertyAnimation on opacity { id: cardFlashAnim; to: 0; duration: 500; easing.type: Easing.OutExpo }
+                PropertyAnimation on opacity { id: cardFlashAnim; to: 0; duration: Motion.expressive; easing.type: Easing.OutExpo }
             }
 
             Rectangle {
@@ -154,7 +154,7 @@ RowLayout {
                 radius: actionCapsule.radius
                 Behavior on opacity {
                     enabled: panel.visible
-                    NumberAnimation { duration: 250 }
+                    NumberAnimation { duration: Motion.normal }
                 }
                 z: 4
             }
@@ -167,7 +167,7 @@ RowLayout {
                 text: icon
                 Behavior on color {
                     enabled: panel.visible
-                    ColorAnimation { duration: 150 }
+                    ColorAnimation { duration: Motion.fast }
                 }
             }
 

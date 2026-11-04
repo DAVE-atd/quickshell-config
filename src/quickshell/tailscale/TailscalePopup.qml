@@ -34,10 +34,10 @@ Item {
         if (visible) { ts.refresh(); forceActiveFocus(); intro = 0; introAnim.restart() }
         else { introAnim.stop(); exitAnim.stop(); intro = 0 }
     }
-    NumberAnimation { id: introAnim; target: root; property: "intro"; to: 1; duration: 260; easing.type: Easing.OutCubic }
+    NumberAnimation { id: introAnim; target: root; property: "intro"; to: 1; duration: Motion.open; easing.type: Motion.openEasing }
     SequentialAnimation {
         id: exitAnim
-        NumberAnimation { target: root; property: "intro"; to: 0; duration: 160; easing.type: Easing.InCubic }
+        NumberAnimation { target: root; property: "intro"; to: 0; duration: Motion.close; easing.type: Motion.closeEasing }
         ScriptAction { script: { if (root.exitCallback) { let cb = root.exitCallback; root.exitCallback = null; cb() } } }
     }
 
@@ -243,7 +243,7 @@ Item {
         font.family: ThemeBackend.iconFont
         font.pixelSize: root.s(14)
         color: done ? ThemeBackend.blue : chH.hovered ? ThemeBackend.text : root.dim
-        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: Motion.fast } }
         Timer { id: chT; interval: 1200; onTriggered: ch.done = false }
         HoverHandler { id: chH; cursorShape: Qt.PointingHandCursor }
         MouseArea {
@@ -266,7 +266,7 @@ Item {
              : cH.hovered ? root.cardHover
              : root.card
         border.color: selected ? Qt.alpha(ThemeBackend.blue, 0.45) : root.faint
-        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: Motion.fast } }
 
         Row {
             id: chipRow; anchors.centerIn: parent; spacing: root.s(6)
@@ -296,7 +296,7 @@ Item {
         height: root.s(44)
         radius: root.s(ThemeBackend.borderRadius) - root.s(4)
         color: pH.hovered ? root.cardHover : "transparent"
-        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: Motion.fast } }
 
         Row {
             anchors { left: parent.left; leftMargin: root.s(10); verticalCenter: parent.verticalCenter }
@@ -330,7 +330,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 value: pRow.peer.ip
                 opacity: pH.hovered ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on opacity { NumberAnimation { duration: Motion.fast } }
             }
             Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
@@ -352,20 +352,20 @@ Item {
         border.color: checked ? Qt.darker(ThemeBackend.blue, 1.2) : Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.2)
         border.width: 1
         opacity: !enabled ? 0.6 : 1
-        Behavior on color { ColorAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: Motion.fast } }
         Rectangle {
             id: knob
             width: root.s(18); height: width; radius: width / 2
             anchors.verticalCenter: parent.verticalCenter
             x: sw.checked ? sw.width - width - root.s(3) : root.s(3)
             color: "white"
-            Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.OutBack } }
+            Behavior on x { NumberAnimation { duration: Motion.fast; easing.type: Easing.OutBack } }
             // Pulse while tailscale up/down runs
             SequentialAnimation on opacity {
                 running: ts.busy; loops: Animation.Infinite
                 onRunningChanged: if (!running) knob.opacity = 1
-                NumberAnimation { to: 0.3; duration: 500 }
-                NumberAnimation { to: 1.0; duration: 500 }
+                NumberAnimation { to: 0.3; duration: Motion.expressive }
+                NumberAnimation { to: 1.0; duration: Motion.expressive }
             }
         }
         HoverHandler { id: swHov; cursorShape: Qt.PointingHandCursor }

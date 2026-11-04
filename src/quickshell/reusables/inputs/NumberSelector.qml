@@ -328,8 +328,8 @@ Item {
         color: glass.active ? "transparent" : (root.isHoveredOrHighlighted ? Qt.darker(root.baseColor, 1.14) : root.baseColor)
         opacity: root.enabled ? 1.0 : 0.5
 
-        Behavior on color { ColorAnimation { duration: 150 } }
-        Behavior on opacity { NumberAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: Motion.fast } }
+        Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 
         GlassFill {
             id: glass
@@ -337,13 +337,13 @@ Item {
             radius: parent.radius
             tintColor: root.baseColor
             press: root.isEditing ? 0.55 : (root.isHoveredOrHighlighted ? 0.2 : 0)
-            Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
             tintAmount: (root.isEditing ? 0.38 : (root.isHoveredOrHighlighted ? 0.3 : 0.22))
-            Behavior on tintAmount { NumberAnimation { duration: 150 } }
+            Behavior on tintAmount { NumberAnimation { duration: Motion.fast } }
         }
 
         scale: (root.isEditing ? 1.02 : 1.0) * root.focusPop
-        Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+        Behavior on scale { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
         transform: Translate { id: shakeT; x: 0 }
     }
 
@@ -392,7 +392,7 @@ Item {
                 anchors.fill: parent
                 radius: Math.max(2, root.buttonCornerRadius - 2)
                 color: root.isEditing ? Qt.rgba(255, 255, 255, 0.05) : (centerMa.containsMouse ? Qt.rgba(255, 255, 255, 0.03) : "transparent")
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: Motion.fast } }
             }
 
             Item {
@@ -430,7 +430,7 @@ Item {
                 elide: Text.ElideRight
                 width: Math.min(implicitWidth, parent.width - 4)
 
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: Motion.fast } }
             }
 
             Item {
@@ -476,13 +476,13 @@ Item {
                     property real entranceOvershoot: 3.2
                     property int exitDuration: 160
 
-                    Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
+                    Behavior on x { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuad } }
 
                     add: Transition {
                         ParallelAnimation {
                             NumberAnimation { property: "scale"; from: 0.3; to: 1.0; duration: charRow.entranceDuration; easing.type: Easing.OutBack; easing.overshoot: charRow.entranceOvershoot }
                             NumberAnimation { property: "y"; from: 10; to: 0; duration: charRow.entranceDuration; easing.type: Easing.OutBack; easing.overshoot: charRow.entranceOvershoot * 0.8 }
-                            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 150; easing.type: Easing.OutCubic }
+                            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: Motion.fast; easing.type: Easing.OutCubic }
                         }
                     }
 
@@ -495,7 +495,7 @@ Item {
                     }
 
                     displaced: Transition {
-                        NumberAnimation { properties: "x,y"; duration: 250; easing.type: Easing.OutBack; easing.overshoot: 1.6 }
+                        NumberAnimation { properties: "x,y"; duration: Motion.normal; easing.type: Easing.OutBack; easing.overshoot: 1.6 }
                     }
 
                     delegate: Item {
@@ -524,15 +524,15 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     x: root.scrollOffset + (innerInput.cursorPosition * root.charSlotStep)
 
-                    Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
+                    Behavior on x { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuad } }
 
                     SequentialAnimation on opacity {
                         running: root.isEditing
                         loops: Animation.Infinite
-                        NumberAnimation { to: 0; duration: 100; easing.type: Easing.InQuad }
-                        PauseAnimation { duration: 400 }
-                        NumberAnimation { to: 1; duration: 100; easing.type: Easing.OutQuad }
-                        PauseAnimation { duration: 400 }
+                        NumberAnimation { to: 0; duration: Motion.ultraFast; easing.type: Easing.InQuad }
+                        PauseAnimation { duration: Motion.ultraSlow }
+                        NumberAnimation { to: 1; duration: Motion.ultraFast; easing.type: Easing.OutQuad }
+                        PauseAnimation { duration: Motion.ultraSlow }
                     }
                 }
 

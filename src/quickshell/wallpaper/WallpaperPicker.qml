@@ -121,10 +121,10 @@ Item {
         id: exitAnim
         running: false
         ParallelAnimation {
-            NumberAnimation { target: filterBarBackground; property: "anchors.topMargin"; to: window.s(-75); duration: 150; easing.type: Easing.InCubic }
+            NumberAnimation { target: filterBarBackground; property: "anchors.topMargin"; to: window.s(-75); duration: Motion.fast; easing.type: Easing.InCubic }
             NumberAnimation { target: filterBarBackground; property: "opacity"; to: 0.0; duration: 160; easing.type: Easing.InQuad }
-            NumberAnimation { target: view; property: "opacity"; to: 0.0; duration: 250; easing.type: Easing.InQuad }
-            NumberAnimation { target: view; property: "anchors.margins"; to: window.s(45); duration: 250; easing.type: Easing.InCubic }
+            NumberAnimation { target: view; property: "opacity"; to: 0.0; duration: Motion.normal; easing.type: Easing.InQuad }
+            NumberAnimation { target: view; property: "anchors.margins"; to: window.s(45); duration: Motion.normal; easing.type: Easing.InCubic }
         }
         ScriptAction {
             script: {
@@ -1548,7 +1548,7 @@ Item {
         anchors.fill: parent
         opacity: window.isReady ? 1.0 : 0.0
         anchors.margins: window.isReady ? 0 : window.s(40)
-        Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
         Behavior on anchors.margins { NumberAnimation { duration: 650; easing.type: Easing.OutQuint } }
 
         spacing: 0; orientation: ListView.Horizontal; clip: false
@@ -1591,31 +1591,31 @@ Item {
 
         add: Transition {
             enabled: window.allowAddAnimation && !window.isModelChanging && !window.isFilterAnimating && !(window.currentFilter === "Search" && window.hasSearched && !window.isSearchPaused)
-            NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutCubic }
+            NumberAnimation { properties: "x,y"; duration: Motion.ultraSlow; easing.type: Easing.OutCubic }
         }
         addDisplaced: Transition {
             enabled: window.allowAddAnimation && !window.isModelChanging && !window.isFilterAnimating && !(window.currentFilter === "Search" && window.hasSearched && !window.isSearchPaused)
-            NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutCubic }
+            NumberAnimation { properties: "x,y"; duration: Motion.ultraSlow; easing.type: Easing.OutCubic }
         }
         move: Transition {
             enabled: !window.isModelChanging && !window.isFilterAnimating && !(window.currentFilter === "Search" && window.hasSearched && !window.isSearchPaused)
-            NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutCubic }
+            NumberAnimation { properties: "x,y"; duration: Motion.ultraSlow; easing.type: Easing.OutCubic }
         }
         moveDisplaced: Transition {
             enabled: !window.isModelChanging && !window.isFilterAnimating && !(window.currentFilter === "Search" && window.hasSearched && !window.isSearchPaused)
-            NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutCubic }
+            NumberAnimation { properties: "x,y"; duration: Motion.ultraSlow; easing.type: Easing.OutCubic }
         }
         remove: Transition {
             enabled: window.allowAddAnimation && !window.isModelChanging && !window.isFilterAnimating && !(window.currentFilter === "Search" && window.hasSearched && !window.isSearchPaused)
-            NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutCubic }
+            NumberAnimation { properties: "x,y"; duration: Motion.ultraSlow; easing.type: Easing.OutCubic }
         }
         removeDisplaced: Transition {
             enabled: window.allowAddAnimation && !window.isModelChanging && !window.isFilterAnimating && !(window.currentFilter === "Search" && window.hasSearched && !window.isSearchPaused)
-            NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutCubic }
+            NumberAnimation { properties: "x,y"; duration: Motion.ultraSlow; easing.type: Easing.OutCubic }
         }
         displaced: Transition {
             enabled: window.allowAddAnimation && !window.isModelChanging && !window.isFilterAnimating && !(window.currentFilter === "Search" && window.hasSearched && !window.isSearchPaused)
-            NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutCubic }
+            NumberAnimation { properties: "x,y"; duration: Motion.ultraSlow; easing.type: Easing.OutCubic }
         }
 
         header: Item { width: Math.max(0, (view.width / 2) - ((window.itemWidth * 1.5) / 2) + window.selectedCenterOffset) }
@@ -1742,9 +1742,9 @@ Item {
             anchors.verticalCenterOffset: window.s(25)
             z: isVisuallyEnlarged ? 100 : Math.max(1, 50 - dist)
 
-            Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-            Behavior on width { enabled: window.initialFocusSet && !window.isModelChanging && !window.isFilterAnimating; NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
-            Behavior on height { enabled: window.initialFocusSet && !window.isModelChanging && !window.isFilterAnimating; NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+            Behavior on opacity { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
+            Behavior on width { enabled: window.initialFocusSet && !window.isModelChanging && !window.isFilterAnimating; NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutCubic } }
+            Behavior on height { enabled: window.initialFocusSet && !window.isModelChanging && !window.isFilterAnimating; NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutCubic } }
 
             Item {
                 id: skewedWrapper
@@ -1754,7 +1754,7 @@ Item {
                 anchors.horizontalCenterOffset: -(window.skewFactor * height) / 2
 
                 property real targetPadding: 0
-                Behavior on targetPadding { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+                Behavior on targetPadding { NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutCubic } }
 
                 width: parent.width - targetPadding
                 height: parent ? parent.height : 0
@@ -1803,7 +1803,7 @@ Item {
                             asynchronous: true
                             cache: true
                             opacity: (status === Image.Ready && source.toString() !== "") ? 1.0 : 0.0
-                            Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                            Behavior on opacity { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
                             sourceSize.width: Math.round((window.itemWidth * 1.5) + ((window.itemHeight + window.s(30)) * 0.35) + window.s(50))
                             sourceSize.height: Math.round(window.itemHeight + window.s(30))
 
@@ -1862,7 +1862,7 @@ Item {
                             accentColor: Qt.rgba(ThemeBackend.surface0.r, ThemeBackend.surface0.g, ThemeBackend.surface0.b, 0.65)
                             textColor: ThemeBackend.text
                             opacity: (delegateRoot.isPlayingVideo && window.previewPlaying) ? (isHoveredOrHighlighted ? 0.9 : 0.18) : 0.88
-                            Behavior on opacity { NumberAnimation { duration: 250 } }
+                            Behavior on opacity { NumberAnimation { duration: Motion.normal } }
                             enabled: !window.isApplying
                             onClicked: delegateRoot.toggleVideoPlay()
                             transform: Matrix4x4 { property real s: -window.skewFactor; matrix: Qt.matrix4x4(1, s, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1) }
@@ -1884,7 +1884,7 @@ Item {
         anchors.topMargin: window.isReady ? window.s(65) : window.s(-75)
         opacity: window.isReady ? 1.0 : 0.0
         Behavior on anchors.topMargin { NumberAnimation { duration: 650; easing.type: Easing.OutQuint } }
-        Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutCubic } }
         anchors.horizontalCenter: parent.horizontalCenter; z: 200; height: window.s(48); width: filterRow.width + window.s(20); radius: ThemeBackend.borderRadius
         color: Qt.alpha(ThemeBackend.base, ThemeBackend.elementOpacity)
 
@@ -1903,8 +1903,8 @@ Item {
                 property real targetWidth: window.showNotification ? Math.min(notifTextDrawer.implicitWidth + paddingLeft + window.s(16), window.s(300)) : 0
                 width: targetWidth; visible: width > 0.1; radius: ThemeBackend.borderRadius; clip: true; anchors.verticalCenter: parent ? parent.verticalCenter : undefined
                 color: Qt.alpha(ThemeBackend.surface0, ThemeBackend.elementOpacity)
-                Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                Behavior on color { ColorAnimation { duration: 250 } }
+                Behavior on width { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
+                Behavior on color { ColorAnimation { duration: Motion.normal } }
 
                 Item {
                     visible: window.showSpinner
@@ -1925,8 +1925,8 @@ Item {
                 Text {
                     id: notifTextDrawer; anchors.left: parent ? parent.left : undefined; anchors.leftMargin: window.showSpinner ? window.s(36) : window.s(12); anchors.verticalCenter: parent ? parent.verticalCenter : undefined
                     width: Math.min(implicitWidth, window.s(300) - anchors.leftMargin - window.s(12)); text: window.currentNotification; color: ThemeBackend.text; font.family: ThemeBackend.fontFamily; font.pixelSize: window.s(12); font.bold: true; elide: Text.ElideRight
-                    opacity: window.showNotification ? 0.9 : 0.0; Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
-                    Behavior on anchors.leftMargin { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                    opacity: window.showNotification ? 0.9 : 0.0; Behavior on opacity { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuart } }
+                    Behavior on anchors.leftMargin { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
                 }
             }
 
@@ -1936,8 +1936,8 @@ Item {
                 width: visible ? (window.isMonitorSelectorOpen ? expandedWidth : window.s(34)) : 0
                 radius: ThemeBackend.borderRadius; clip: true; anchors.verticalCenter: parent ? parent.verticalCenter : undefined
                 color: Qt.alpha(window.isMonitorSelectorOpen ? ThemeBackend.surface2 : ThemeBackend.surface0, ThemeBackend.elementOpacity)
-                Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                Behavior on color { ColorAnimation { duration: 250 } }
+                Behavior on width { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
+                Behavior on color { ColorAnimation { duration: Motion.normal } }
 
                 CanvasIconButton {
                     glassShadow: 0
@@ -1968,7 +1968,7 @@ Item {
 
                 Row {
                     id: monitorListRow; anchors.left: monitorToggleBtn.right; anchors.verticalCenter: parent ? parent.verticalCenter : undefined; spacing: window.s(6)
-                    opacity: window.isMonitorSelectorOpen ? 1.0 : 0.0; Behavior on opacity { NumberAnimation { duration: 250 } }
+                    opacity: window.isMonitorSelectorOpen ? 1.0 : 0.0; Behavior on opacity { NumberAnimation { duration: Motion.normal } }
                     Repeater {
                         model: monitorModel
                         delegate: ClickButton {
@@ -2083,8 +2083,8 @@ Item {
                         radius: ThemeBackend.borderRadius
                         color: Qt.alpha(window.currentFilter === modelData.name ? ThemeBackend.surface2 : (filterMouse.containsMouse ? ThemeBackend.surface1 : ThemeBackend.surface0), ThemeBackend.elementOpacity)
                         scale: window.currentFilter === modelData.name ? 1.05 : (filterMouse.containsMouse ? 1.03 : 1.0)
-                        Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
-                        Behavior on color { ColorAnimation { duration: 250 } }
+                        Behavior on scale { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
+                        Behavior on color { ColorAnimation { duration: Motion.normal } }
 
                         Text {
                             id: filterText
@@ -2094,7 +2094,7 @@ Item {
                             font.family: ThemeBackend.fontFamily
                             font.pixelSize: window.s(12)
                             font.bold: window.currentFilter === modelData.name
-                            Behavior on color { ColorAnimation { duration: 250 } }
+                            Behavior on color { ColorAnimation { duration: Motion.normal } }
                         }
 
                         MouseArea {
@@ -2113,7 +2113,7 @@ Item {
                         radius: ThemeBackend.borderRadius
                         color: modelData.hex
                         scale: window.currentFilter === modelData.name ? 1.05 : (colorMouse.containsMouse ? 1.03 : 1.0)
-                        Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                        Behavior on scale { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
 
                         MouseArea {
                             id: colorMouse
@@ -2135,7 +2135,7 @@ Item {
                 clip: true
                 visible: width > 0.1
                 anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                Behavior on width { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
 
                 CanvasIconButton {
                     glassShadow: 0
@@ -2180,7 +2180,7 @@ Item {
                 height: window.s(34)
                 clip: true
                 anchors.verticalCenter: parent ? parent.verticalCenter : undefined
-                Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                Behavior on width { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
 
                 CanvasIconButton {
                     glassShadow: 0
@@ -2225,7 +2225,7 @@ Item {
                     height: window.s(34)
                     opacity: searchContainer.isSearchOpen ? 1.0 : 0.0
                     visible: opacity > 0.01
-                    Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
                     cornerRadius: ThemeBackend.borderRadius
                     baseColor: Qt.alpha(ThemeBackend.surface0, ThemeBackend.elementOpacity)
                     borderColor: ThemeBackend.text
@@ -2258,7 +2258,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     opacity: searchContainer.isSearchOpen ? 1.0 : 0.0
                     visible: opacity > 0.01
-                    Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                    Behavior on opacity { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
                     size: window.s(34)
                     cornerRadius: ThemeBackend.borderRadius
                     iconSize: window.s(34)

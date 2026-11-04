@@ -272,7 +272,7 @@ Item {
                 y: (cameraRig.height - height) / 2
                 
                 transformOrigin: Item.Center
-                Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
+                Behavior on scale { NumberAnimation { duration: Motion.fast; easing.type: Easing.OutQuad } }
 
                 DragHandler {
                     target: zoomContainer
@@ -679,7 +679,7 @@ Item {
             
             visible: root.showSizeConfig
             opacity: visible ? 1.0 : 0.0
-            Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutExpo } }
+            Behavior on opacity { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutExpo } }
 
             RowLayout {
                 anchors.fill: parent
@@ -812,7 +812,7 @@ Item {
             
             visible: root.showColorPicker
             opacity: visible ? 1.0 : 0.0
-            Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutExpo } }
+            Behavior on opacity { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutExpo } }
 
             Column {
                 anchors.centerIn: parent
@@ -1095,8 +1095,8 @@ Item {
                         property real actualLeft: targetLeft
                         property real actualRight: targetRight
 
-                        Behavior on actualLeft { NumberAnimation { id: leftAnim; duration: 250; easing.type: Easing.OutExpo } }
-                        Behavior on actualRight { NumberAnimation { id: rightAnim; duration: 250; easing.type: Easing.OutExpo } }
+                        Behavior on actualLeft { NumberAnimation { id: leftAnim; duration: Motion.normal; easing.type: Easing.OutExpo } }
+                        Behavior on actualRight { NumberAnimation { id: rightAnim; duration: Motion.normal; easing.type: Easing.OutExpo } }
 
                         x: actualLeft
                         width: actualRight - actualLeft

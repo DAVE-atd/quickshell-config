@@ -50,7 +50,7 @@ Item {
                 radius: ThemeBackend.borderRadius
                 color: gfRow.active ? "transparent" : (rowMa.containsMouse ? Qt.alpha(ThemeBackend.surface1, 0.45) : Qt.alpha(ThemeBackend.surface0, 0.4))
 
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: Motion.fast } }
 
                 transform: Translate { y: (index * rootObj.s(12)) * (1 - bottomPanel.tab.introBottom) }
 
@@ -61,7 +61,7 @@ Item {
                     tintColor: Qt.alpha(ThemeBackend.surface0, 0.4)
                     tintAmount: 0.25
                     press: rowMa.pressed ? 0.8 : (rowMa.containsMouse ? 0.25 : 0)
-                    Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                    Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
                 }
 
                 MouseArea {
@@ -294,7 +294,7 @@ Item {
                                 enabled: bottomPanel.tab.introAppBars === 1.0 && !bottomPanel.tab.hourlyCleared
                                 NumberAnimation { duration: 600; easing.type: Easing.OutQuint }
                             }
-                            Behavior on color { ColorAnimation { duration: 400 } }
+                            Behavior on color { ColorAnimation { duration: Motion.ultraSlow } }
 
                             MouseArea {
                                 anchors.fill: parent

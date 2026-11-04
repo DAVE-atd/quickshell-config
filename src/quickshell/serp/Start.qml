@@ -132,7 +132,7 @@ PanelWindow {
                     Behavior on y { NumberAnimation { duration: 550; easing.type: Easing.OutQuint } }
                 }
 
-                Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutQuart } }
+                Behavior on opacity { NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutQuart } }
                 Behavior on scale { NumberAnimation { duration: 600; easing.type: Easing.OutQuint } }
                 Behavior on color { ColorAnimation { duration: 600; easing.type: Easing.OutCubic } }
             }
@@ -152,14 +152,14 @@ PanelWindow {
         id: introChoreography
         ScriptAction { script: window.bgSoundHandle = Sounds.playUntilStopped("start/background.wav", 0.4, true) }
         ScriptAction { script: Sounds.playSfx("start/start.wav") }
-        PauseAnimation { duration: 100 }
+        PauseAnimation { duration: Motion.ultraFast }
 
         NumberAnimation { target: window; property: "panelReveal"; from: 0.0; to: 1.0; duration: 2000; easing.type: Easing.InOutCubic }
-        PauseAnimation { duration: 150 }
+        PauseAnimation { duration: Motion.fast }
 
         NumberAnimation { target: window; property: "welcomeReveal"; to: 1.0; duration: 850; easing.type: Easing.InOutSine }
         PauseAnimation { duration: 800 }
-        NumberAnimation { target: window; property: "welcomeOpacity"; to: 0.0; duration: 400; easing.type: Easing.OutQuart }
+        NumberAnimation { target: window; property: "welcomeOpacity"; to: 0.0; duration: Motion.ultraSlow; easing.type: Easing.OutQuart }
         ScriptAction { script: Sounds.playSfx("start/transition_serp.wav", 0.6) }
 
         ParallelAnimation {
@@ -167,18 +167,18 @@ PanelWindow {
             NumberAnimation { target: window; property: "shellTextReveal"; to: 1.0; duration: 1600; easing.type: Easing.InOutSine }
             NumberAnimation { target: window; property: "shellTextScale"; from: 0.94; to: 1.0; duration: 1600; easing.type: Easing.OutExpo }
         }
-        PauseAnimation { duration: 150 }
+        PauseAnimation { duration: Motion.fast }
         ParallelAnimation {
-            NumberAnimation { target: window; property: "authorOpacity"; to: 1.0; duration: 500; easing.type: Easing.OutQuint }
-            NumberAnimation { target: window; property: "authorScale"; to: 1.0; duration: 500; easing.type: Easing.OutQuint }
+            NumberAnimation { target: window; property: "authorOpacity"; to: 1.0; duration: Motion.expressive; easing.type: Easing.OutQuint }
+            NumberAnimation { target: window; property: "authorScale"; to: 1.0; duration: Motion.expressive; easing.type: Easing.OutQuint }
             ScriptAction { script: Sounds.playSfx("start/pop_author.wav") }
         }
 
         PauseAnimation { duration: 1500 }
 
         ParallelAnimation {
-            NumberAnimation { target: window; property: "shellTextOpacity"; to: 0.0; duration: 400; easing.type: Easing.OutQuart }
-            NumberAnimation { target: window; property: "authorOpacity"; to: 0.0; duration: 400; easing.type: Easing.OutQuart }
+            NumberAnimation { target: window; property: "shellTextOpacity"; to: 0.0; duration: Motion.ultraSlow; easing.type: Easing.OutQuart }
+            NumberAnimation { target: window; property: "authorOpacity"; to: 0.0; duration: Motion.ultraSlow; easing.type: Easing.OutQuart }
         }
         ScriptAction { script: Sounds.playSfx("start/transition_serp.wav", 0.6) }
 
@@ -212,7 +212,7 @@ PanelWindow {
 
             SequentialAnimation {
                 ScriptAction { script: Sounds.playSfx("start/wave.wav", 0.2) }
-                PauseAnimation { duration: 250 }
+                PauseAnimation { duration: Motion.normal }
 
                 ParallelAnimation {
                     NumberAnimation { target: window; property: "orbBoost"; to: 1.0; duration: 3200; easing.type: Easing.OutSine }
@@ -606,9 +606,9 @@ PanelWindow {
         id: closeSequence
         ScriptAction { script: Sounds.playSfx("start/transition_serp.wav", 0.6) }
         ScriptAction { script: window.exitSoundHandle = Sounds.playUntilStopped("start/exit.wav", 0.7, false) }
-        PauseAnimation { duration: 400 }
+        PauseAnimation { duration: Motion.ultraSlow }
         ParallelAnimation {
-            NumberAnimation { target: window; property: "mainOpacity"; to: 0.0; duration: 400; easing.type: Easing.OutQuint }
+            NumberAnimation { target: window; property: "mainOpacity"; to: 0.0; duration: Motion.ultraSlow; easing.type: Easing.OutQuint }
             NumberAnimation { target: window; property: "panelReveal"; to: 0.0; duration: 1760; easing.type: Easing.InOutCubic }
         }
         ScriptAction {

@@ -30,7 +30,7 @@ Item {
     z: 50
     visible: opacity > 0.001
     opacity: active ? 1.0 : 0.0
-    Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+    Behavior on opacity { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
 
     onActiveChanged: {
         if (active) {
@@ -123,7 +123,7 @@ Item {
                     height: rootObj.s(44)
                     radius: ThemeBackend.borderRadius
                     color: isSelected ? ThemeBackend.mauve : (rowMa.containsMouse ? Qt.alpha(ThemeBackend.surface1, 0.4) : Qt.alpha(ThemeBackend.surface0, 0.25))
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on color { ColorAnimation { duration: Motion.fast } }
 
                     RowLayout {
                         anchors.fill: parent

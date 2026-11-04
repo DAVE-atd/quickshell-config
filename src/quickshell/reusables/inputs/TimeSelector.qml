@@ -152,12 +152,12 @@ Item {
         }
 
         scale: (!root.enabled ? 1.0 : (segmentMa.pressed && !isEditing ? 0.94 : (isHovered && !isEditing ? 1.04 : 1.0))) * popScale
-        Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+        Behavior on scale { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
 
         SequentialAnimation {
             id: segPopAnim
-            NumberAnimation { target: segRoot; property: "popScale"; to: 1.04; duration: 100; easing.type: Easing.OutQuad }
-            NumberAnimation { target: segRoot; property: "popScale"; to: 1.0; duration: 400; easing.type: Easing.OutQuint }
+            NumberAnimation { target: segRoot; property: "popScale"; to: 1.04; duration: Motion.ultraFast; easing.type: Easing.OutQuad }
+            NumberAnimation { target: segRoot; property: "popScale"; to: 1.0; duration: Motion.ultraSlow; easing.type: Easing.OutQuint }
         }
 
         Rectangle {
@@ -166,7 +166,7 @@ Item {
             color: "#ffffff"
             opacity: flashOpacity
             visible: !pillGlass.active
-            PropertyAnimation on opacity { id: segFlashAnim; to: 0; duration: 400; easing.type: Easing.OutExpo }
+            PropertyAnimation on opacity { id: segFlashAnim; to: 0; duration: Motion.ultraSlow; easing.type: Easing.OutExpo }
         }
 
         Text {
@@ -178,7 +178,7 @@ Item {
             font.pixelSize: root.fontPixelSize
             color: (isSelected && !pillGlass.active) ? root.activeTextColor : root.textColor
             visible: !isEditing
-            Behavior on color { ColorAnimation { duration: 250 } }
+            Behavior on color { ColorAnimation { duration: Motion.normal } }
         }
 
         TextInput {
@@ -272,8 +272,8 @@ Item {
         clip: true
         opacity: root.enabled ? 1.0 : 0.5
         
-        Behavior on color { ColorAnimation { duration: 150 } }
-        Behavior on opacity { NumberAnimation { duration: 150 } }
+        Behavior on color { ColorAnimation { duration: Motion.fast } }
+        Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 
         GlassFill {
             id: glass
@@ -281,7 +281,7 @@ Item {
             radius: parent.radius
             tintColor: root.baseColor
             tintAmount: 0.22
-            Behavior on tintAmount { NumberAnimation { duration: 150 } }
+            Behavior on tintAmount { NumberAnimation { duration: Motion.fast } }
         }
 
         Rectangle {
@@ -291,7 +291,7 @@ Item {
             readonly property real targetWidth: activeSegItem.width
             readonly property bool isMoving: Math.abs(x - targetX) > 0.5 || Math.abs(width - targetWidth) > 0.5
             property real lift: (pillGlass.active && isMoving) ? 1.0 : 0.0
-            Behavior on lift { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+            Behavior on lift { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
             scale: 1.0 + 0.12 * lift
             width: targetWidth
             height: activeSegItem.height
@@ -310,12 +310,12 @@ Item {
                 shadow: 1
                 press: 0.35 + 0.65 * activePill.lift
                 pulse: Math.min(1, activePill.activeSegItem.flashOpacity * 2.5)
-                Behavior on tintAmount { NumberAnimation { duration: 150 } }
+                Behavior on tintAmount { NumberAnimation { duration: Motion.fast } }
             }
 
-            Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
-            Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on x { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
+            Behavior on width { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
+            Behavior on color { ColorAnimation { duration: Motion.fast } }
         }
 
         Row {

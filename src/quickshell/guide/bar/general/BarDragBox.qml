@@ -144,7 +144,7 @@ Rectangle {
 
                 Behavior on width {
                     enabled: !delegateRoot.isBeingDragged
-                    NumberAnimation { duration: 150; easing.type: Easing.OutQuint }
+                    NumberAnimation { duration: Motion.fast; easing.type: Easing.OutQuint }
                 }
 
                 Rectangle {
@@ -242,7 +242,7 @@ Rectangle {
                         color: ThemeBackend.red
                         opacity: delegateRoot.showError ? 0.15 : 0.0
                         radius: ThemeBackend.borderRadius
-                        Behavior on opacity { NumberAnimation { duration: 250 } }
+                        Behavior on opacity { NumberAnimation { duration: Motion.normal } }
                         z: 4
                     }
 
@@ -251,7 +251,7 @@ Rectangle {
                         color: ThemeBackend.mauve
                         opacity: dragBoxRoot.tab.pendingGroupModuleId === delegateRoot.moduleId ? 0.2 : 0.0
                         radius: ThemeBackend.borderRadius
-                        Behavior on opacity { NumberAnimation { duration: 150 } }
+                        Behavior on opacity { NumberAnimation { duration: Motion.fast } }
                         z: 5
                     }
 

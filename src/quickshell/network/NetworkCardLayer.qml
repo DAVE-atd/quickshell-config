@@ -32,7 +32,7 @@ Item {
             property bool isLoaded: false
             opacity: (isLoaded && window.currentPower) ? 1.0 : 0.0
             visible: opacity > 0.01
-            Behavior on opacity { enabled: window.visible; NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
+            Behavior on opacity { enabled: window.visible; NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutQuint } }
 
             property real entryAnim: isLoaded ? 1.0 : 0.0
             Behavior on entryAnim { enabled: window.visible; NumberAnimation { duration: 600; easing.type: Easing.OutBack } }
@@ -162,7 +162,7 @@ Item {
             property real currentPopScale: isMyActionable ? fillBtn.popScale : clickBtn.popScale
 
             scale: (!isLoaded ? 0.0 : (isHoveredOrHighlighted ? dynamicScale * 1.025 : dynamicScale)) * currentPopScale
-            Behavior on scale { enabled: window.visible; NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+            Behavior on scale { enabled: window.visible; NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
             z: floatCardDelegateContainer.isCardHovered ? 10 : index
 
             HoverHandler {
@@ -356,7 +356,7 @@ Item {
                             font.pixelSize: window.s(18)
                             color: dynamicTextColor
                             anchors.verticalCenter: parent.verticalCenter
-                            Behavior on color { enabled: window.visible; ColorAnimation { duration: 250 } }
+                            Behavior on color { enabled: window.visible; ColorAnimation { duration: Motion.normal } }
                         }
 
                         MarqueeText {
@@ -371,7 +371,7 @@ Item {
                             marqueeSpacing: window.s(30)
                             active: window.visible
 
-                            Behavior on color { enabled: window.visible; ColorAnimation { duration: 250 } }
+                            Behavior on color { enabled: window.visible; ColorAnimation { duration: Motion.normal } }
                         }
                     }
                 }

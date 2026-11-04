@@ -296,7 +296,7 @@ Popup {
                             opacity: pickerRoot.currentPlaceIndex !== -1 ? 1.0 : 0.0
 
                             Behavior on opacity {
-                                NumberAnimation { duration: 150 }
+                                NumberAnimation { duration: Motion.fast }
                             }
 
                             property int curIdx: pickerRoot.currentPlaceIndex
@@ -304,7 +304,7 @@ Popup {
                             y: targetY
 
                             Behavior on y {
-                                NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
+                                NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutQuint }
                             }
                         }
 
@@ -325,12 +325,12 @@ Popup {
                                     color: isActive ? "transparent" : (placeMa.containsMouse ? Qt.alpha(ThemeBackend.surface1, 0.5) : "transparent")
 
                                     Behavior on color {
-                                        ColorAnimation { duration: 150 }
+                                        ColorAnimation { duration: Motion.fast }
                                     }
 
                                     scale: placeMa.pressed ? 0.98 : 1.0
                                     Behavior on scale {
-                                        NumberAnimation { duration: 250; easing.type: Easing.OutQuint }
+                                        NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint }
                                     }
 
                                     RowLayout {
@@ -340,7 +340,7 @@ Popup {
                                         spacing: Scaler.s(8)
 
                                         Behavior on anchors.leftMargin {
-                                            NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
+                                            NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutQuint }
                                         }
 
                                         Item {
@@ -355,7 +355,7 @@ Popup {
                                                 color: parent.parent.parent.isActive ? ThemeBackend.crust : (placeMa.containsMouse ? ThemeBackend.text : ThemeBackend.subtext0)
 
                                                 Behavior on color {
-                                                    ColorAnimation { duration: 150 }
+                                                    ColorAnimation { duration: Motion.fast }
                                                 }
                                             }
                                         }
@@ -371,7 +371,7 @@ Popup {
                                             elide: Text.ElideRight
 
                                             Behavior on color {
-                                                ColorAnimation { duration: 150 }
+                                                ColorAnimation { duration: Motion.fast }
                                             }
                                         }
                                     }

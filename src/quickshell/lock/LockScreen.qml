@@ -294,7 +294,7 @@ FocusScope {
             target: lockScreenRoot
             property: "centerReveal"
             to: 1.0
-            duration: 150
+            duration: Motion.fast
             easing.type: Easing.OutBack
             easing.overshoot: 1.2
         }
@@ -302,7 +302,7 @@ FocusScope {
             target: lockScreenRoot
             property: "wingsReveal"
             to: 1.0
-            duration: 250
+            duration: Motion.normal
             easing.type: Easing.OutBack
             easing.overshoot: 1.12
         }
@@ -322,7 +322,7 @@ FocusScope {
             target: lockScreenRoot
             property: "centerReveal"
             to: 0.0
-            duration: 100
+            duration: Motion.ultraFast
             easing.type: Easing.InQuad
         }
     }
@@ -352,7 +352,7 @@ FocusScope {
                 target: lockScreenRoot
                 property: "foldScaleX"
                 to: 0.0
-                duration: 250
+                duration: Motion.normal
                 easing.type: Easing.InBack
                 easing.overshoot: 1.3
             }
@@ -360,7 +360,7 @@ FocusScope {
                 target: lockScreenRoot
                 property: "foldScaleY"
                 to: 0.0
-                duration: 250
+                duration: Motion.normal
                 easing.type: Easing.InBack
                 easing.overshoot: 1.3
             }
@@ -368,28 +368,28 @@ FocusScope {
                 target: lockScreenRoot
                 property: "centerReveal"
                 to: 0.0
-                duration: 250
+                duration: Motion.normal
                 easing.type: Easing.InQuad
             }
             NumberAnimation {
                 target: lockScreenRoot
                 property: "contentReveal"
                 to: 0.0
-                duration: 250
+                duration: Motion.normal
                 easing.type: Easing.InQuad
             }
             NumberAnimation {
                 target: lockScreenRoot
                 property: "panelReveal"
                 to: 0.0
-                duration: 250
+                duration: Motion.normal
                 easing.type: Easing.InOutCubic
             }
             NumberAnimation {
                 target: lockScreenRoot
                 property: "mainOpacity"
                 to: 0.0
-                duration: 250
+                duration: Motion.normal
                 easing.type: Easing.InQuad
             }
         }
@@ -577,13 +577,13 @@ FocusScope {
             }
 
             SequentialAnimation {
-                PauseAnimation { duration: 250 }
+                PauseAnimation { duration: Motion.normal }
                 NumberAnimation {
                     target: lockScreenRoot
                     property: "contentReveal"
                     from: 0.0
                     to: 1.0
-                    duration: 250
+                    duration: Motion.normal
                     easing.type: Easing.OutCubic
                 }
             }

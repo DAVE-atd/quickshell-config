@@ -78,7 +78,7 @@ Item {
             y: (root.isVertical || root.showLayout) ? 0 : root.s(15)
             Behavior on y { NumberAnimation { duration: 620; easing.type: Easing.OutQuint } }
         }
-        Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+        Behavior on opacity { NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutCubic } }
 
         IconButton {
             anchors.fill: parent
@@ -101,7 +101,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
             color: iconMouse.containsMouse ? ThemeBackend.text : (root.isCompact ? ThemeBackend.subtext0 : ThemeBackend.overlay2)
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: Motion.fast } }
         }
 
         MouseArea {

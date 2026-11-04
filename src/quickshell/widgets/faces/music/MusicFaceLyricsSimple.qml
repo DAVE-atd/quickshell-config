@@ -100,7 +100,7 @@ Item {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 250
+                duration: Motion.normal
                 easing.type: Easing.OutQuad
             }
         }

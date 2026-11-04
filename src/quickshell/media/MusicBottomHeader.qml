@@ -172,9 +172,9 @@ RowLayout {
         opacity: bottomSectionSwitch.currentIndex === 2
             ? (root.hasTargetPlayer && !Lyrics.loading ? 1.0 : 0.45)
             : (enabled ? 1.0 : 0.45)
-        Behavior on opacity { NumberAnimation { duration: 250 } }
-        Behavior on accentColor { ColorAnimation { duration: 250 } }
-        Behavior on textColor { ColorAnimation { duration: 250 } }
+        Behavior on opacity { NumberAnimation { duration: Motion.normal } }
+        Behavior on accentColor { ColorAnimation { duration: Motion.normal } }
+        Behavior on textColor { ColorAnimation { duration: Motion.normal } }
         onClicked: {
             if (bottomSectionSwitch.currentIndex === 2) {
                 root.lyricsPickerPopup.targetScreen = (root.Window && root.Window.window) ? root.Window.window.screen : null;

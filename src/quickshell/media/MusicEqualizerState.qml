@@ -75,7 +75,7 @@ MusicPlayerState {
             duration: 650; 
             easing.type: Easing.OutSine 
         }
-        PauseAnimation { duration: 150 }
+        PauseAnimation { duration: Motion.fast }
         NumberAnimation { 
             target: root; property: "eqLightningFade"; 
             from: 0.0; to: 1.0; 

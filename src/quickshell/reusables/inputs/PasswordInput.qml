@@ -52,7 +52,7 @@ FocusScope {
     property real revealProgress: isRevealed ? 1.0 : 0.0
     Behavior on revealProgress {
         NumberAnimation {
-            duration: 250
+            duration: Motion.normal
             easing.type: Easing.OutBack
             easing.overshoot: 1.25
         }
@@ -326,7 +326,7 @@ FocusScope {
     SequentialAnimation {
         id: focusPopAnim
         NumberAnimation { target: root; property: "focusPop"; to: 1.02; duration: 120; easing.type: Easing.OutQuad }
-        NumberAnimation { target: root; property: "focusPop"; to: 1.0; duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { target: root; property: "focusPop"; to: 1.0; duration: Motion.normal; easing.type: Easing.OutCubic }
     }
 
     TextMetrics {
@@ -357,7 +357,7 @@ FocusScope {
         id: contentContainer
         anchors.fill: parent
         scale: (root.hasError ? 1.02 : (root.isBusy ? 0.98 : 1.0)) * root.focusPop
-        Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+        Behavior on scale { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
         transform: Translate { id: shakeT; x: 0 }
 
         Rectangle {
@@ -373,7 +373,7 @@ FocusScope {
                 return root.baseColor;
             }
             color: glass.active ? "transparent" : stateColor
-            Behavior on color { ColorAnimation { duration: 150 } }
+            Behavior on color { ColorAnimation { duration: Motion.fast } }
 
             GlassFill {
                 id: glass
@@ -383,8 +383,8 @@ FocusScope {
                 tintAmount: root.hasFocus ? 0.38 : 0.26
                 press: root.hasFocus ? 0.55 : (root.isHoveredOrHighlighted ? 0.2 : 0)
                 pulse: Math.min(1, root.typePulse + root.errorPulse)
-                Behavior on press { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                Behavior on tintAmount { NumberAnimation { duration: 150 } }
+                Behavior on press { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
+                Behavior on tintAmount { NumberAnimation { duration: Motion.fast } }
             }
         }
 
@@ -424,7 +424,7 @@ FocusScope {
                             property: "spinBlur"
                             from: 0.0
                             to: 1.0
-                            duration: 250
+                            duration: Motion.normal
                             easing.type: Easing.OutQuad
                         }
                         NumberAnimation {
@@ -432,7 +432,7 @@ FocusScope {
                             property: "spinBlur"
                             from: 1.0
                             to: 0.0
-                            duration: 250
+                            duration: Motion.normal
                             easing.type: Easing.InQuad
                         }
                     }
@@ -608,16 +608,16 @@ FocusScope {
                             : submitButton.currentAccent))
                 opacity: root.enabled && !root.isBusy ? 1.0 : 0.5
 
-                Behavior on color { ColorAnimation { duration: 150 } }
-                Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: Motion.fast } }
+                Behavior on opacity { NumberAnimation { duration: Motion.fast } }
 
                 scale: (!root.enabled || root.isBusy ? 1.0 : (submitMa.pressed ? 1.08 : (submitButton.isHoveredOrHighlighted ? 1.04 : 1.0))) * submitButton.popScale
-                Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutQuint } }
+                Behavior on scale { NumberAnimation { duration: Motion.normal; easing.type: Easing.OutQuint } }
 
                 SequentialAnimation {
                     id: submitPopAnim
                     NumberAnimation { target: submitButton; property: "popScale"; to: 1.1; duration: 110; easing.type: Easing.OutQuad }
-                    NumberAnimation { target: submitButton; property: "popScale"; to: 1.0; duration: 400; easing.type: Easing.OutQuint }
+                    NumberAnimation { target: submitButton; property: "popScale"; to: 1.0; duration: Motion.ultraSlow; easing.type: Easing.OutQuint }
                 }
 
                 Item {
@@ -637,7 +637,7 @@ FocusScope {
                         property: "rotation"
                         from: I18n.rtl ? 0 : 180
                         to: I18n.rtl ? 360 : 540
-                        duration: 400
+                        duration: Motion.ultraSlow
                         easing.type: Easing.OutCubic
                     }
 
@@ -655,7 +655,7 @@ FocusScope {
                             radius: width / 2
                             color: root.baseColor
                             antialiasing: true
-                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on color { ColorAnimation { duration: Motion.fast } }
                         }
 
                         Rectangle {
@@ -668,7 +668,7 @@ FocusScope {
                             rotation: 40
                             color: root.baseColor
                             antialiasing: true
-                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on color { ColorAnimation { duration: Motion.fast } }
                         }
 
                         Rectangle {
@@ -681,7 +681,7 @@ FocusScope {
                             rotation: -40
                             color: root.baseColor
                             antialiasing: true
-                            Behavior on color { ColorAnimation { duration: 150 } }
+                            Behavior on color { ColorAnimation { duration: Motion.fast } }
                         }
                     }
                 }
@@ -691,7 +691,7 @@ FocusScope {
                     radius: submitButton.cornerRadius
                     color: "#ffffff"
                     opacity: submitButton.flashOpacity
-                    PropertyAnimation on opacity { id: submitFlashAnim; to: 0; duration: 400; easing.type: Easing.OutExpo }
+                    PropertyAnimation on opacity { id: submitFlashAnim; to: 0; duration: Motion.ultraSlow; easing.type: Easing.OutExpo }
                 }
 
                 MouseArea {
@@ -733,7 +733,7 @@ FocusScope {
                 opacity: (innerInput.text.length === 0 && !root.hasFocus && charModel.count === 0) ? 0.45 : 0.0
                 x: root.computeRowX(implicitWidth, fieldArea.width)
                 anchors.verticalCenter: parent.verticalCenter
-                Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on opacity { NumberAnimation { duration: Motion.fast } }
             }
 
             Rectangle {
@@ -770,7 +770,7 @@ FocusScope {
 
                 onContentWidthChanged: root.updateScroll()
 
-                Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                Behavior on x { NumberAnimation { duration: Motion.fast; easing.type: Easing.OutCubic } }
 
                 add: Transition {
                     ParallelAnimation {
@@ -778,7 +778,7 @@ FocusScope {
                             property: "scale"
                             from: 0.60
                             to: 1.0
-                            duration: 250
+                            duration: Motion.normal
                             easing.type: Easing.OutBack
                             easing.overshoot: 1.35
                         }
@@ -786,7 +786,7 @@ FocusScope {
                             property: "y"
                             from: 3.5
                             to: 0
-                            duration: 250
+                            duration: Motion.normal
                             easing.type: Easing.OutBack
                             easing.overshoot: 1.25
                         }
@@ -794,14 +794,14 @@ FocusScope {
                             property: "rotation"
                             from: -9
                             to: 0
-                            duration: 250
+                            duration: Motion.normal
                             easing.type: Easing.OutCubic
                         }
                         NumberAnimation {
                             property: "opacity"
                             from: 0
                             to: 1
-                            duration: 150
+                            duration: Motion.fast
                             easing.type: Easing.OutQuad
                         }
                     }
@@ -830,7 +830,7 @@ FocusScope {
                         NumberAnimation {
                             property: "opacity"
                             to: 0
-                            duration: 100
+                            duration: Motion.ultraFast
                             easing.type: Easing.InQuad
                         }
                     }
@@ -929,7 +929,7 @@ FocusScope {
                 anchors.verticalCenter: parent.verticalCenter
                 x: root.scrollOffset + (innerInput.cursorPosition * root.charSlotStep)
 
-                Behavior on x { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                Behavior on x { NumberAnimation { duration: Motion.fast; easing.type: Easing.OutCubic } }
 
                 SequentialAnimation on opacity {
                     running: root.showCaret && (root.hasFocus || root.action_highlight) && (root.isRevealed || root.revealProgress > 0.01) && root.isWidgetVisible

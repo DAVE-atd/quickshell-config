@@ -391,7 +391,7 @@ Item {
             y: Math.max(0, Math.min(availH, availH * (root.verticalPosition / 100.0)))
 
             scale: frameMa.isDragging ? 1.04 : (frameMa.isOverBox ? 1.02 : 1.0)
-            Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutQuint } }
+            Behavior on scale { NumberAnimation { duration: Motion.fast; easing.type: Easing.OutQuint } }
 
             Item {
                 id: dragTargetContainer
