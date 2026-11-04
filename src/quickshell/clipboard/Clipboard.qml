@@ -61,7 +61,10 @@ PanelWindow {
     readonly property bool isFullscreenActive: {
         try {
             if (typeof Hyprland !== "undefined" && Hyprland.focusedWorkspace) {
-                return Boolean(Hyprland.focusedWorkspace.hasFullscreen || (Hyprland.activeToplevel && Hyprland.activeToplevel.fullscreen));
+                let ws = Hyprland.focusedWorkspace;
+                // hasFullscreen is also true for maximized windows (Hyprland fullscreen mode 1, the
+                // titlebar's green button): only a real fullscreen window hides the bar
+                return ws.hasFullscreen && ws.toplevels.values.some(t => t.wayland && t.wayland.fullscreen);
             }
         } catch (e) {}
         return false;
