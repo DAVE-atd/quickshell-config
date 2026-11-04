@@ -251,7 +251,7 @@ PanelWindow {
     // Bar style "convex": dropdowns hang from the bar, side panels from the screen frame.
     // Geometry goes to ConvexState (bar/ConvexBulges.qml draws the bar side, popups square their corners).
     readonly property bool isConvex: rawBarSettings.style === "convex" && (barPosition === "top" || barPosition === "bottom") && !isBarEffectivelyHidden
-    readonly property var convexDropdowns: ["network", "bluetooth", "tailscale", "security", "volume", "music"]
+    readonly property var convexDropdowns: ["network", "bluetooth", "tailscale", "security", "volume", "music", "battery"]
     readonly property int convexFrame: Math.round(Scaler.s(7))   // bar/Bar.qml convexFrame
     readonly property int convexRadius: Math.round(Scaler.s(12)) // bar/Bar.qml cornerRadius
     readonly property int convexBarH: {
@@ -261,8 +261,9 @@ PanelWindow {
     }
     // Side drawers come out of the right frame edge, the power menu out of the bottom edge
     readonly property var convexSideDrawers: ["system", "notifications"]
+    readonly property var convexBottomDrawers: ["power"]
     function isConvexAttached(name) {
-        return isConvex && (convexDropdowns.indexOf(name) !== -1 || convexSideDrawers.indexOf(name) !== -1 || name === "power");
+        return isConvex && (convexDropdowns.indexOf(name) !== -1 || convexSideDrawers.indexOf(name) !== -1 || convexBottomDrawers.indexOf(name) !== -1);
     }
     // Bar section { x0, x1 } a dropdown belongs to: the one nearest to its registry position
     // (not the animated one, which depends on this)
@@ -286,7 +287,7 @@ PanelWindow {
             let y0 = top ? bh : t, y1 = mh - (top ? t : bh);
             return { x: mw - t - w, y: Math.round(y0 + Math.max(0, (y1 - y0 - h) / 2)), w: w };
         }
-        if (name === "power") {
+        if (convexBottomDrawers.indexOf(name) !== -1) {
             return { x: Math.round((mw - w) / 2), y: mh - (top ? t : bh) - h, w: w };
         }
         let x = fallbackX;
@@ -771,12 +772,12 @@ PanelWindow {
                 // tuck 0 = out, 1 = pulled into the edge; starts closing as soon as isClosing is set.
                 readonly property bool isSideDrawer: masterWindow.isConvex && masterWindow.convexSideDrawers.indexOf(masterWindow.currentActive) !== -1
                 readonly property bool isDrawer: masterWindow.isConvexAttached(masterWindow.currentActive)
-                readonly property bool tucksDown: masterWindow.currentActive === "power" || masterWindow.barPosition === "bottom"
+                readonly property bool tucksDown: masterWindow.convexBottomDrawers.indexOf(masterWindow.currentActive) !== -1 || masterWindow.barPosition === "bottom"
                 // Frame edge the drawer slides out of
                 readonly property string tuckEdge: isSideDrawer ? "right" : (tucksDown ? "bottom" : "top")
                 readonly property bool shown: masterWindow.isVisible && !masterWindow.isClosing
                 // Bar dropdowns morph out of their bar section instead of sliding
-                readonly property bool isMorph: isDrawer && !isSideDrawer && masterWindow.currentActive !== "power" && masterWindow.convexOrigin !== null
+                readonly property bool isMorph: isDrawer && !isSideDrawer && masterWindow.convexBottomDrawers.indexOf(masterWindow.currentActive) === -1 && masterWindow.convexOrigin !== null
                 // minflair ConvexCenterPanel: content fades in from 20 % (out below 40 % when closing)
                 readonly property real morphFade: shown ? Math.min(1, Math.max(0, (morphClip.p - 0.2) / 0.8))
                                                         : Math.min(1, Math.max(0, (morphClip.p - 0.4) / 0.6))

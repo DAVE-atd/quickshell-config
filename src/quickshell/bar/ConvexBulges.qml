@@ -80,8 +80,9 @@ Item {
             readonly property real reach: def.popup ? 0.5 : root.join
             readonly property bool touchLeft: def.x - def.pad <= root.frame + reach
             readonly property bool touchRight: def.x + def.w + def.pad >= root.width - root.frame - reach
-            readonly property real x0: touchLeft ? 0 : def.x - def.pad
-            readonly property real x1: touchRight ? root.width : def.x + def.w + def.pad
+            // Whole pixels: fractional edges left a half-transparent 1 px column next to the joins
+            readonly property real x0: touchLeft ? 0 : Math.round(def.x - def.pad)
+            readonly property real x1: touchRight ? root.width : Math.round(def.x + def.w + def.pad)
             readonly property real r: def.popup ? 0 : root.radius
             visible: used
             opacity: def.tray ? ConvexState.trayOpacity : def.popup ? ConvexState.opacity : 1
@@ -103,16 +104,17 @@ Item {
                 Behavior on width { enabled: !sec.def.popup && root.bar.layoutAnimationsEnabled; NumberAnimation { duration: Motion.normal; easing.type: Easing.OutCubic } }
             }
 
-            // Concave joins between the strip and the bulge's sides
+            // Concave joins between the strip and the bulge's sides; they overlap the body by 1 px
+            // so no seam shows while the body animates through fractional positions
             Corner {
                 visible: !sec.touchLeft
-                x: body.x - width
+                x: body.x - width + 1
                 y: root.atBottom ? root.edgeY + root.barH - root.frame - height : root.edgeY + root.frame
                 cornerIndex: root.atBottom ? 3 : 1
             }
             Corner {
                 visible: !sec.touchRight
-                x: body.x + body.width
+                x: body.x + body.width - 1
                 y: root.atBottom ? root.edgeY + root.barH - root.frame - height : root.edgeY + root.frame
                 cornerIndex: root.atBottom ? 2 : 0
             }

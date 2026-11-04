@@ -132,11 +132,12 @@ Item {
             onClicked: if (!root.isPreview) Quickshell.execDetached(["bash", "-c", Caching.serpantinumDir + "/scripts/qs_manager.sh open settings"])
         }
 
+        // The built-in launcher was removed: Walker (nixos-config, Super+Space) instead
         MenuButton {
             id: launcherBtn
             visible: root.showLauncher
             glyph: "󰍉"
-            onClicked: if (!root.isPreview) Quickshell.execDetached(["bash", "-c", Caching.serpantinumDir + "/scripts/qs_manager.sh toggle launcher"])
+            onClicked: if (!root.isPreview) Quickshell.execDetached(["walker"])
         }
     }
 }
