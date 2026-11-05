@@ -64,6 +64,7 @@ singleton ClamavService 1.0 singletons/security/ClamavService.qml
 singleton UsbguardService 1.0 singletons/security/UsbguardService.qml
 singleton VulnixService 1.0 singletons/security/VulnixService.qml
 singleton TailscaleService 1.0 singletons/security/TailscaleService.qml
+singleton ProtectionService 1.0 singletons/security/ProtectionService.qml
 singleton ConvexState 1.0 frame/ConvexState.qml
 singleton WindowTracker 1.0 singletons/system/WindowTracker.qml
 

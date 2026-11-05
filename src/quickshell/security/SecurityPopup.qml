@@ -27,7 +27,7 @@ Item {
     }
     onVisibleChanged: {
         // Opening the popup counts as having seen new detections (bar icon back to normal)
-        if (visible) { ClamavService.unseen = false; forceActiveFocus(); intro = 0; introAnim.restart() }
+        if (visible) { ClamavService.unseen = false; ProtectionService.refresh(); forceActiveFocus(); intro = 0; introAnim.restart() }
         else { introAnim.stop(); exitAnim.stop(); intro = 0 }
     }
     NumberAnimation { id: introAnim; target: root; property: "intro"; to: 1; duration: Motion.open; easing.type: Motion.openEasing }
@@ -41,6 +41,10 @@ Item {
 
     readonly property var cs: ClamavService
     readonly property var vx: VulnixService
+    readonly property var prot: ProtectionService
+
+    // Main.qml sizes the popup to this (binding); above the cap the content scrolls
+    readonly property real drawerHeight: Math.max(s(400), Math.min(content.implicitHeight + s(32), s(900)))
 
     function sevColor(score) {
         return score >= 9 ? ThemeBackend.red : score >= 7 ? ThemeBackend.peach : score >= 4 ? ThemeBackend.yellow : ThemeBackend.subtext0
@@ -131,6 +135,7 @@ Item {
                         Switch {
                             anchors { right: parent.right; verticalCenter: parent.verticalCenter }
                             checked: cs.enabled
+                            busy: cs.busy
                             onToggled: { cs.setEnabled(!cs.enabled) }
                         }
                     }
@@ -215,6 +220,34 @@ Item {
                                 icon: "󰅐"; label: "Last scan"
                                 value: cs.scanning ? "running" : !cs.scanEnded ? "never (this session)"
                                      : root.ago(cs.scanEnded) + (cs.scanState === "infected" ? " · threats" : cs.scanState === "clean" ? " · clean" : "")
+                            }
+                        }
+                    }
+
+                    // ── Protection: USBGuard, OpenSnitch (only the ones installed on this host) ─
+                    Label { text: "PROTECTION"; visible: prot.available }
+
+                    Rectangle {
+                        width: parent.width
+                        visible: prot.available
+                        height: protCol.implicitHeight + s(12)
+                        radius: s(ThemeBackend.borderRadius)
+                        color: root.card
+
+                        Column {
+                            id: protCol
+                            anchors { left: parent.left; right: parent.right; top: parent.top; margins: s(6) }
+                            ProtectionRow {
+                                toggle: prot.usbguard
+                                icon: "󰕓"; title: "USBGuard"
+                                onText: "Blocks unknown USB devices"
+                                offText: "Off · every USB device is allowed"
+                            }
+                            ProtectionRow {
+                                toggle: prot.opensnitch
+                                icon: "󰒃"; title: "OpenSnitch"
+                                onText: "Asks before apps go online"
+                                offText: "Off · every connection is allowed"
                             }
                         }
                     }
@@ -526,16 +559,61 @@ Item {
         }
     }
 
+    // One protection (ProtectionToggle) with icon, state line and switch; hidden if not installed
+    component ProtectionRow: Item {
+        id: pr
+        property var toggle
+        property string icon
+        property string title
+        property string onText
+        property string offText
+        readonly property bool on: toggle && toggle.enabled
+        readonly property color tint: on ? ThemeBackend.blue : ThemeBackend.subtext0
+        visible: toggle && toggle.available
+        width: parent ? parent.width : 0
+        height: root.s(48)
+
+        Rectangle {
+            id: prDot
+            width: root.s(30); height: width; radius: width / 2
+            anchors { left: parent.left; leftMargin: root.s(6); verticalCenter: parent.verticalCenter }
+            color: Qt.rgba(pr.tint.r, pr.tint.g, pr.tint.b, pr.on ? 0.16 : 0.08)
+            Behavior on color { ColorAnimation { duration: Motion.normal } }
+            Text { anchors.centerIn: parent; text: pr.icon; font.pixelSize: root.s(15); color: pr.tint }
+        }
+        Column {
+            anchors { left: prDot.right; leftMargin: root.s(10); right: prSwitch.left; rightMargin: root.s(10); verticalCenter: parent.verticalCenter }
+            Text { width: parent.width; elide: Text.ElideRight; text: pr.title; font.pixelSize: root.s(12); font.weight: Font.Medium; color: ThemeBackend.text }
+            Text {
+                width: parent.width; elide: Text.ElideRight
+                font.pixelSize: root.s(10); color: ThemeBackend.subtext0
+                text: !pr.toggle ? ""
+                    : pr.toggle.busy ? (pr.on ? "Switching on…" : "Switching off…")
+                    : !pr.on ? pr.offText
+                    : pr.toggle.active ? pr.onText
+                    : "On, but not running"
+            }
+        }
+        Switch {
+            id: prSwitch
+            anchors { right: parent.right; rightMargin: root.s(6); verticalCenter: parent.verticalCenter }
+            checked: pr.on
+            busy: pr.toggle ? pr.toggle.busy : false
+            onToggled: pr.toggle.setEnabled(!pr.on)
+        }
+    }
+
     component Switch: Rectangle {
         id: sw
         property bool checked: false
+        property bool busy: false
         signal toggled()
         width: root.s(44); height: root.s(24); radius: height / 2
         color: checked ? (swHov.hovered ? Qt.lighter(ThemeBackend.blue, 1.1) : ThemeBackend.blue)
                        : Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, swHov.hovered ? 0.15 : 0.1)
         border.color: checked ? Qt.darker(ThemeBackend.blue, 1.2) : Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.2)
         border.width: 1
-        opacity: cs.busy ? 0.75 : 1
+        opacity: busy ? 0.75 : 1
         Behavior on color { ColorAnimation { duration: Motion.fast } }
         Rectangle {
             width: root.s(18); height: width; radius: width / 2
