@@ -52,11 +52,11 @@ Item {
         onRightClicked: if (!root.isPreview) root.toggleDnd()
     }
 
-    // Unread badge, pops in with the count
+    // Ungelesen-Badge unten rechts (oben schnitt ihn der Bar-Rand ab), poppt mit der Anzahl auf
     Rectangle {
         readonly property bool shown: root.unread > 0 && !root.dnd
-        x: pill.x + pill.width - width * 0.7
-        y: pill.y - height * 0.25
+        x: pill.x + pill.width - width * 0.75
+        y: pill.y + pill.height - height * 0.75
         height: root.s(14)
         width: Math.max(height, badgeText.implicitWidth + root.s(6))
         radius: height / 2
