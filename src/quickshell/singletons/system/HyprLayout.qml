@@ -10,7 +10,7 @@ import Quickshell.Hyprland
 Item {
     id: root
 
-    // rects: wireframe for layout/LayoutPreview.qml as [x, y, w, h] fractions, first = main window
+    // rects: wireframe for reusables/display/LayoutPreview.qml as [x, y, w, h] fractions, first = main window
     readonly property var layouts: [
         { id: "dwindle",   name: "Dwindle",  layout: "dwindle",   orientation: "",
           rects: [[0, 0, .5, 1], [.5, 0, .5, .5], [.5, .5, .25, .5], [.75, .5, .25, .5]] },

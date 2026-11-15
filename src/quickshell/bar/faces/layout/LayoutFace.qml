@@ -3,7 +3,6 @@
 import QtQuick
 import Quickshell
 import "../../../reusables"
-import "../../../layout"
 import "../../../"
 
 Item {
