@@ -462,11 +462,16 @@
         }
       },
       "sysmon": {
-        "style": {
-          "title": "Circle style",
-          "desc": "Visual appearance of the progress rings",
-          "wave": "Wave",
-          "circle": "Circle"
+        "look": {
+          "title": "Style",
+          "desc": "Gauge ring, progress bar or icon only",
+          "gauge": "Gauge",
+          "bar": "Bar",
+          "plain": "Icon"
+        },
+        "text": {
+          "title": "Show values",
+          "desc": "Display the number next to each icon"
         },
         "cpu": {
           "title": "CPU usage",

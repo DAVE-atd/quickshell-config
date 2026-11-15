@@ -76,7 +76,13 @@ GuideTab {
         let bs = Config.getSetting("bar", {});
         if (bs && bs.sysmonStyle) return bs.sysmonStyle;
         if (bs && bs.sysmon && bs.sysmon.style) return bs.sysmon.style;
-        return "wave";
+        return "gauge";
+    }
+
+    property bool sysmonShowText: {
+        let bs = Config.getSetting("bar", {});
+        if (bs && bs.sysmonShowText !== undefined) return Boolean(bs.sysmonShowText);
+        return true;
     }
 
     property var sysmonStats: {
@@ -294,8 +300,10 @@ GuideTab {
         if (bs && bs.sysmonStyle) {
             barModulesRoot.sysmonStyle = bs.sysmonStyle;
         } else {
-            barModulesRoot.sysmonStyle = "wave";
+            barModulesRoot.sysmonStyle = "gauge";
         }
+
+        barModulesRoot.sysmonShowText = !(bs && bs.sysmonShowText === false);
 
         if (bs && Array.isArray(bs.sysmonStats)) {
             barModulesRoot.sysmonStats = bs.sysmonStats;
@@ -499,6 +507,13 @@ GuideTab {
         barModulesRoot.sysmonStyle = styleName;
         let current = Config.getSetting("bar", {});
         current.sysmonStyle = styleName;
+        Config.setSetting("bar", current);
+    }
+
+    function setSysmonShowText(val) {
+        barModulesRoot.sysmonShowText = val;
+        let current = Config.getSetting("bar", {});
+        current.sysmonShowText = val;
         Config.setSetting("bar", current);
     }
 

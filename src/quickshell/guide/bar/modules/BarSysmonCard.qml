@@ -15,35 +15,61 @@ BarModuleCard {
         BarPreviewWidget {
             property string sysmonStyle: tab.sysmonStyle
             property var sysmonStats: tab.sysmonStats
+            property bool sysmonShowText: tab.sysmonShowText
         }
     }
 
     SettingsRow {
         rootObj: card.rootObj
         settingId: "bar_sysmon_style"
-        searchKeywords: "sysmon system monitor circle style wave ring"
+        searchKeywords: "sysmon system monitor style gauge ring bar icon"
         baseColor: Qt.alpha(ThemeBackend.surface1, 0.35)
         icon: "󱐋"
-        title: I18n.t("guide.bar.sysmon.style.title", "Circle style")
-        description: I18n.t("guide.bar.sysmon.style.desc", "Visual appearance of the progress rings")
+        title: I18n.t("guide.bar.sysmon.look.title", "Style")
+        description: I18n.t("guide.bar.sysmon.look.desc", "Gauge ring, progress bar or icon only")
 
         Switch {
+            id: lookSwitch
+            readonly property var ids: ["gauge", "bar", "plain"]
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-            implicitWidth: rootObj.s(200)
+            implicitWidth: rootObj.s(240)
             implicitHeight: rootObj.s(32)
             cornerRadius: ThemeBackend.borderRadius
             fontPixelSize: rootObj.s(11)
             options: [
-                I18n.t("guide.bar.sysmon.style.wave", "Wave"),
-                I18n.t("guide.bar.sysmon.style.circle", "Circle")
+                I18n.t("guide.bar.sysmon.look.gauge", "Gauge"),
+                I18n.t("guide.bar.sysmon.look.bar", "Bar"),
+                I18n.t("guide.bar.sysmon.look.plain", "Icon")
             ]
-            currentIndex: card.tab.sysmonStyle === "circle" ? 1 : 0
+            currentIndex: Math.max(0, ids.indexOf(card.tab.sysmonStyle))
             accentColor: ThemeBackend.mauve
             baseColor: ThemeBackend.surface0
             textColor: ThemeBackend.text
             activeTextColor: ThemeBackend.crust
             onValueChanged: function(index, value) {
-                card.tab.setSysmonStyle(index === 1 ? "circle" : "wave");
+                card.tab.setSysmonStyle(lookSwitch.ids[index]);
+            }
+        }
+    }
+
+    SettingsRow {
+        rootObj: card.rootObj
+        settingId: "bar_sysmon_text"
+        searchKeywords: "sysmon value text percent number"
+        baseColor: Qt.alpha(ThemeBackend.surface1, 0.35)
+        icon: "󰉿"
+        title: I18n.t("guide.bar.sysmon.text.title", "Show values")
+        description: I18n.t("guide.bar.sysmon.text.desc", "Display the number next to each icon")
+
+        Toggle {
+            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+            checked: card.tab.sysmonShowText
+            accentColor: ThemeBackend.mauve
+            baseColor: ThemeBackend.surface1
+            handleColor: ThemeBackend.crust
+            handleOffColor: ThemeBackend.text
+            onToggled: function(c) {
+                card.tab.setSysmonShowText(c);
             }
         }
     }

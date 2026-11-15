@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Shapes
 import QtQuick.Window
 import QtQuick.Controls
 import Quickshell
@@ -30,7 +31,7 @@ Item {
         function onRawSettingsChanged() { root.configRevision++; }
     }
 
-    property string circleStyle: {
+    property string rawStyle: {
         if (widget && widget !== root && widget.sysmonStyle !== undefined) return widget.sysmonStyle;
         if (module && module.sysmonStyle !== undefined) return module.sysmonStyle;
         let dummy = configRevision;
@@ -39,10 +40,24 @@ Item {
             if (bs.sysmonStyle) return bs.sysmonStyle;
             if (bs.sysmon && bs.sysmon.style) return bs.sysmon.style;
         }
-        return "wave";
+        return "gauge";
     }
 
-    readonly property bool useSineWave: circleStyle !== "circle"
+    // Aussehen nach SystemMonitorPlus (DMS-Plugin von Dadangdut33, MIT): "gauge" = Icon im
+    // Tacho-Ring, "bar" = Icon über Fortschrittsbalken, "plain" = nur Icon + Wert.
+    // Alte Werte ("wave", "circle") landen bei "gauge".
+    readonly property string look: (rawStyle === "bar" || rawStyle === "plain") ? rawStyle : "gauge"
+
+    property bool showText: {
+        if (widget && widget !== root && widget.sysmonShowText !== undefined) return widget.sysmonShowText;
+        if (module && module.sysmonShowText !== undefined) return module.sysmonShowText;
+        let dummy = configRevision;
+        if (typeof Config !== "undefined" && Config.rawSettings && Config.rawSettings.bar) {
+            let bs = Config.rawSettings.bar;
+            if (bs.sysmonShowText !== undefined) return Boolean(bs.sysmonShowText);
+        }
+        return true;
+    }
 
     property var activeStats: {
         if (widget && widget !== root && widget.sysmonStats !== undefined) return widget.sysmonStats;
@@ -125,27 +140,37 @@ Item {
         Behavior on y { NumberAnimation { duration: 800; easing.type: Easing.OutQuint } }
     }
 
-    component SysMonCircle: Rectangle {
-        id: circleRoot
+    function cs(v) { return barWindow ? barWindow.cs(v) : v; }
+
+    // Schwellen wie im Plugin: [Warnung, Gefahr]
+    readonly property var thresholds: ({ "cpu": [60, 80], "ram": [75, 90], "temp": [70, 85], "disk": [80, 90] })
+
+    FontMetrics {
+        id: valueMetrics
+        font.pixelSize: Math.round(root.cs(root.isCompact ? 9 : 10.5))
+        font.family: (ThemeBackend.fontFamily !== undefined && ThemeBackend.fontFamily !== "") ? ThemeBackend.fontFamily : "sans-serif"
+    }
+
+    component SysMonMetric: Row {
+        id: metric
+        property string statType: ""
         property real value: 0
-        property string textVal: ""
         property string icon: ""
-        property color accentColor: root.basePrimary
-        property bool showText: textVal !== ""
-        property bool useSineWave: root.useSineWave
         property bool initAnimTrigger: (!barWindow || !!(root.activeTarget && root.activeTarget.isPreview))
 
-        property real animValue: initAnimTrigger ? value : 0
-        Behavior on animValue { NumberAnimation { duration: 600; easing.type: Easing.OutQuint } }
+        readonly property real safeValue: isNaN(value) ? 0 : value
+        readonly property color accentColor: {
+            let t = root.thresholds[statType];
+            if (t && safeValue >= t[1]) return ThemeBackend.red;
+            if (t && safeValue >= t[0]) return ThemeBackend.yellow;
+            return root.basePrimary;
+        }
+        readonly property color trackColor: Qt.alpha(accentColor, 0.18)
 
-        property real fillRatio: Math.max(0.0, Math.min(1.0, isNaN(animValue) ? 0.0 : animValue))
+        property real fillRatio: initAnimTrigger ? Math.max(0, Math.min(1, safeValue / 100)) : 0
+        Behavior on fillRatio { NumberAnimation { duration: 600; easing.type: Easing.OutQuint } }
 
-        implicitWidth: root.circleSize
-        implicitHeight: root.circleSize
-        width: implicitWidth
-        height: implicitHeight
-        radius: width / 2
-        color: "transparent"
+        spacing: root.cs(root.isCompact ? 3 : 4)
 
         Timer {
             running: (!activeTarget || activeTarget.moduleActive) && root.showLayout && !initAnimTrigger
@@ -155,40 +180,91 @@ Item {
 
         opacity: initAnimTrigger ? 1.0 : 0.0
         transform: Translate {
-            x: (!root.isVertical || initAnimTrigger) ? 0 : (barWindow ? barWindow.cs(15) : 15)
-            y: (root.isVertical || initAnimTrigger) ? 0 : (barWindow ? barWindow.cs(15) : 15)
+            x: (!root.isVertical || initAnimTrigger) ? 0 : root.cs(15)
+            y: (root.isVertical || initAnimTrigger) ? 0 : root.cs(15)
             Behavior on x { NumberAnimation { duration: 620; easing.type: Easing.OutQuint } }
             Behavior on y { NumberAnimation { duration: 620; easing.type: Easing.OutQuint } }
         }
         Behavior on opacity { NumberAnimation { duration: Motion.ultraSlow; easing.type: Easing.OutCubic } }
 
-        ShaderEffect {
-            id: circleGauge
-            anchors.fill: parent
+        Item {
+            anchors.verticalCenter: parent.verticalCenter
+            implicitWidth: root.look === "gauge" ? root.circleSize : visual.implicitWidth
+            implicitHeight: root.circleSize
 
-            property vector2d itemSize: Qt.vector2d(width, height)
-            property real fillRatio: circleRoot.fillRatio
-            property real strokeWidth: barWindow ? barWindow.cs(2.2) : 2.2
-            property real useSineWave: circleRoot.useSineWave ? 1.0 : 0.0
-            property color accentColor: circleRoot.accentColor
-            property vector4d params: Qt.vector4d(barWindow ? barWindow.cs(0.9) : 0.9, 0.0, 0.0, 0.0)
+            // Tacho-Ring: 270 Grad, unten offen
+            Shape {
+                id: gauge
+                visible: root.look === "gauge"
+                anchors.fill: parent
+                preferredRendererType: Shape.CurveRenderer
+                readonly property real stroke: root.cs(2.4)
+                readonly property real r: Math.max(1, Math.min(width, height) / 2 - stroke / 2)
 
-            fragmentShader: "file://" + Caching.serpantinumDir + "/assets/shaders/gauges/circular_wave_gauge.frag.qsb"
+                ShapePath {
+                    strokeColor: metric.trackColor
+                    strokeWidth: gauge.stroke
+                    fillColor: "transparent"
+                    capStyle: ShapePath.RoundCap
+                    PathAngleArc {
+                        centerX: gauge.width / 2; centerY: gauge.height / 2
+                        radiusX: gauge.r; radiusY: gauge.r
+                        startAngle: 135; sweepAngle: 270
+                    }
+                }
+                ShapePath {
+                    strokeColor: metric.fillRatio > 0.005 ? metric.accentColor : "transparent"
+                    strokeWidth: gauge.stroke
+                    fillColor: "transparent"
+                    capStyle: ShapePath.RoundCap
+                    PathAngleArc {
+                        centerX: gauge.width / 2; centerY: gauge.height / 2
+                        radiusX: gauge.r; radiusY: gauge.r
+                        startAngle: 135; sweepAngle: 270 * metric.fillRatio
+                    }
+                }
+            }
+
+            Column {
+                id: visual
+                anchors.centerIn: parent
+                spacing: root.cs(2)
+
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: metric.icon
+                    font.pixelSize: Math.round(root.cs(root.look === "gauge" ? (root.isCompact ? 10 : 12) : (root.isCompact ? 12 : 14)))
+                    font.family: ThemeBackend.iconFont
+                    color: metric.accentColor
+                }
+
+                Rectangle {
+                    visible: root.look === "bar"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    implicitWidth: root.cs(root.isCompact ? 18 : 22)
+                    implicitHeight: root.cs(root.isCompact ? 4 : 5)
+                    radius: height / 2
+                    color: metric.trackColor
+                    clip: true
+
+                    Rectangle {
+                        width: parent.width * metric.fillRatio
+                        height: parent.height
+                        radius: parent.radius
+                        color: metric.accentColor
+                    }
+                }
+            }
         }
 
         Text {
-            anchors.centerIn: parent
-            text: circleRoot.showText ? circleRoot.textVal : circleRoot.icon
-            font.pixelSize: Math.round(circleRoot.showText
-                ? (barWindow ? barWindow.cs(root.isCompact ? 7.5 : 9) : (root.isCompact ? 7.5 : 9))
-                : (barWindow ? barWindow.cs(root.isCompact ? 9 : 11) : (root.isCompact ? 9 : 11)))
-            font.bold: circleRoot.showText
-            font.family: circleRoot.showText
-                ? ((ThemeBackend.fontFamily !== undefined && ThemeBackend.fontFamily !== "") ? ThemeBackend.fontFamily : "sans-serif")
-                : ThemeBackend.iconFont
+            visible: root.showText && !root.isVertical
+            anchors.verticalCenter: parent.verticalCenter
+            // feste Breite, sonst wandert die Leiste bei jedem Ziffernwechsel
+            width: Math.ceil(valueMetrics.advanceWidth(metric.statType === "temp" ? "100°" : "100%"))
+            text: Math.round(metric.safeValue) + (metric.statType === "temp" ? "°" : "%")
+            font: valueMetrics.font
             color: (ThemeBackend.text !== undefined && ThemeBackend.text !== "") ? ThemeBackend.text : "#ffffff"
-            horizontalAlignment: Text.AlignHCenter
-            verticalAlignment: Text.AlignVCenter
         }
     }
 
@@ -196,24 +272,19 @@ Item {
         id: sysLayout
         vertical: root.isVertical
         anchors.centerIn: parent
-        spacing: barWindow ? barWindow.cs(root.isCompact ? 5 : 6) : (root.isCompact ? 5 : 6)
-        property int circleSize: root.circleSize
+        spacing: root.cs(root.isCompact ? 6 : 8)
 
         Repeater {
             model: root.activeStats
 
-            SysMonCircle {
-                readonly property string statType: modelData
+            SysMonMetric {
+                statType: modelData
                 value: {
-                    if (statType === "cpu") return isNaN(SysData.cpu) ? 0 : SysData.cpu / 100.0;
-                    if (statType === "ram") return isNaN(SysData.ramPercent) ? 0 : SysData.ramPercent / 100.0;
-                    if (statType === "temp") return isNaN(SysData.temp) ? 0 : Math.max(0, Math.min(1, SysData.temp / 100.0));
-                    if (statType === "disk") return isNaN(SysData.diskPercent) ? 0 : SysData.diskPercent / 100.0;
+                    if (statType === "cpu") return SysData.cpu;
+                    if (statType === "ram") return SysData.ramPercent;
+                    if (statType === "temp") return SysData.temp;
+                    if (statType === "disk") return SysData.diskPercent;
                     return 0;
-                }
-                textVal: {
-                    if (statType === "temp") return isNaN(SysData.temp) ? "0" : Math.round(SysData.temp).toString();
-                    return "";
                 }
                 icon: {
                     if (statType === "cpu") return String.fromCodePoint(0xF035B);
@@ -221,13 +292,6 @@ Item {
                     if (statType === "temp") return String.fromCodePoint(0xF050F);
                     if (statType === "disk") return String.fromCodePoint(0xF0A0);
                     return "";
-                }
-                accentColor: {
-                    if (statType === "cpu") return Qt.tint(root.basePrimary, Qt.rgba(1.0, 0.22, 0.22, 0.25));
-                    if (statType === "ram") return Qt.lighter(root.basePrimary, 1.15);
-                    if (statType === "temp") return Qt.darker(root.basePrimary, 1.15);
-                    if (statType === "disk") return Qt.darker(root.basePrimary, 1.35);
-                    return root.basePrimary;
                 }
             }
         }

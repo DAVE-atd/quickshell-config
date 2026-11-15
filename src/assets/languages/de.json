@@ -460,11 +460,16 @@
         }
       },
       "sysmon": {
-        "style": {
-          "title": "Kreis-Stil",
-          "desc": "Erscheinungsbild der Fortschrittsringe",
-          "wave": "Welle",
-          "circle": "Kreis"
+        "look": {
+          "title": "Stil",
+          "desc": "Tacho-Ring, Fortschrittsbalken oder nur Icon",
+          "gauge": "Tacho",
+          "bar": "Balken",
+          "plain": "Icon"
+        },
+        "text": {
+          "title": "Werte anzeigen",
+          "desc": "Zahl neben jedem Icon anzeigen"
         },
         "cpu": {
           "title": "CPU-Auslastung",
