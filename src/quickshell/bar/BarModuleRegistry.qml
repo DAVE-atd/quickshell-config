@@ -197,6 +197,12 @@ QtObject {
             defaultVariant: "default",
             face: "faces/tailscale/TailscaleFace.qml"
         },
+        "layout": {
+            name: "Layout",
+            icon: "󰕮",
+            defaultVariant: "default",
+            face: "faces/layout/LayoutFace.qml"
+        },
         "notif": {
             name: "Notifications",
             icon: "󰂚",
