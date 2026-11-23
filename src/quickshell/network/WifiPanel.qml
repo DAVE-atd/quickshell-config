@@ -1,10 +1,10 @@
 // Wi-Fi panel: hangs from its bar section like the other dropdowns (Main.qml convexPlace, at least as
 // wide as the section; height follows the content via drawerHeight).
-// Radar hero: nearby networks are blips placed by signal strength (stronger = closer to the centre)
-// that light up as the sweep passes; the connected network sits in the centre, its details beside it.
-// List below: hovering a row highlights its blip, secured networks unfold a password field.
-// Data comes straight from Quickshell.Networking (NetworkManager). Opened by the bar face "wifi"
-// (qs_manager.sh toggle network). Bluetooth has its own popup (bluetooth/BluetoothPopup.qml).
+// Top: three tiles (Wi-Fi, Hotspot, Airplane mode). Below a card for the connected network (link rates
+// down/up, band, channel, IP), then the nearby networks in one card (secured networks unfold a password
+// field), at the bottom "Other network…" (hidden SSID, inline form) and "Settings" (nmtui in kitty).
+// Data comes from Quickshell.Networking (NetworkManager); link details from iw, hotspot via nmcli,
+// airplane mode via rfkill. Opened by the bar face "wifi" (qs_manager.sh toggle network).
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -20,25 +20,35 @@ Item {
     function s(val) { return Scaler.s(val) }
 
     readonly property color accent: ThemeBackend.sapphire
-    readonly property color dim: Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.45)
+    readonly property color dim: Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.55)
     readonly property color faint: Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.06)
     readonly property color card: Qt.alpha(ThemeBackend.surface0, 0.55)
     readonly property color cardHover: Qt.alpha(ThemeBackend.surface1, 0.65)
+    // Connected card: accent sunk into the background
+    readonly property color heroFill: Qt.tint(ThemeBackend.base, Qt.alpha(accent, 0.38))
+    // Text on accent fills: dark on a light accent, light on a dark one
+    readonly property real accentLum: 0.299 * accent.r + 0.587 * accent.g + 0.114 * accent.b
+    readonly property color accentInk: accentLum > 0.55 ? ThemeBackend.base : "#ffffff"
+    readonly property real cardRadius: Math.min(ThemeBackend.borderRadius, s(18))
 
     // ── Layout ────────────────────────────────────────────────────────────────
     readonly property real pad: s(14)
-    readonly property real gap: s(12)
-    readonly property real headerH: s(34)
-    readonly property real heroH: s(150)
-    readonly property real rowH: s(44)
+    readonly property real gap: s(10)
+    readonly property real tileH: s(68)
+    readonly property real heroH: s(92)
+    readonly property real rowH: s(52)
     readonly property real pwH: s(48)
-    readonly property int maxRows: 6
-    readonly property bool showList: wifiOn
-    readonly property real listH: netModel.count === 0 ? s(40)
-        : Math.min(netModel.count, maxRows) * rowH + (pwFor !== "" ? pwH : 0)
+    readonly property real btnH: s(38)
+    readonly property real otherH: s(96)
+    readonly property int maxRows: 5
+    readonly property bool showList: wifiOn && !hotspotOn
+    readonly property real listH: netModel.count === 0 ? s(48)
+        : Math.min(netModel.count, maxRows) * rowH + (pwFor !== "" ? pwH : 0) + s(12)
     // Main.qml sizes the popup to this (binding, never written by Main)
-    readonly property real drawerHeight: pad * 2 + headerH + gap + heroH
-        + (showList ? gap + s(20) + listH : 0)
+    readonly property real drawerHeight: pad * 2 + tileH + gap + heroH
+        + (showList ? gap + listH : 0)
+        + (otherOpen ? gap + otherH : 0)
+        + gap + btnH
 
     // ── Intro (non-convex only; convex: Main.qml grows it out of the bar) ─────
     property real intro: 0
@@ -57,11 +67,13 @@ Item {
 
     onVisibleChanged: {
         if (visible) {
-            pwFor = ""; failName = ""; hoverName = "";
+            pwFor = ""; failName = ""; hoverName = ""; otherOpen = false;
             forceActiveFocus();
             intro = 0; introAnim.restart();
             rebuild();
             fetchLink();
+            fetchRfkill();
+            fetchHotspot();
             if (Networking.canCheckConnectivity) Networking.checkConnectivity();
         } else {
             introAnim.stop(); exitAnim.stop(); intro = 0;
@@ -71,6 +83,7 @@ Item {
 
     Keys.onEscapePressed: (event) => {
         if (pwFor !== "") pwFor = "";
+        else if (otherOpen) otherOpen = false;
         else if (typeof masterWindow !== "undefined" && masterWindow.switchWidget) masterWindow.switchWidget("hidden", "");
         else Quickshell.execDetached(["bash", Caching.serpantinumDir + "/scripts/qs_manager.sh", "close"]);
         event.accepted = true;
@@ -82,23 +95,27 @@ Item {
         for (let i = 0; i < d.length; i++) if (d[i] && d[i].type === type) return d[i];
         return null;
     }
+    // No backend = NetworkManager was not on D-Bus when the shell started (Quickshell does not retry)
+    readonly property bool noBackend: Networking.backend === NetworkBackendType.None
     readonly property var wifiDevice: deviceOf(DeviceType.Wifi)
     readonly property var wiredDevice: deviceOf(DeviceType.Wired)
     readonly property bool wifiOn: Networking.wifiEnabled
     readonly property bool wiredUp: !!wiredDevice && wiredDevice.connected
+    readonly property bool hotspotOn: !!wifiDevice && wifiDevice.mode === WifiDeviceMode.AccessPoint
 
     function updateScan() {
-        if (wifiDevice) wifiDevice.scannerEnabled = visible && wifiOn;
+        if (wifiDevice) wifiDevice.scannerEnabled = visible && wifiOn && !hotspotOn;
     }
     onWifiDeviceChanged: { updateScan(); rebuild(); }
-    onWifiOnChanged: { updateScan(); rebuild(); }
+    onWifiOnChanged: { updateScan(); rebuild(); fetchRfkill(); }
+    onHotspotOnChanged: { updateScan(); fetchHotspot(); }
 
     // ── Networks ──────────────────────────────────────────────────────────────
     // name → WifiNetwork (strongest access point per SSID)
     property var netRefs: ({})
     // Connected network for the hero: { name, strength, secured, secLabel } or null
     property var current: null
-    property string hoverName: ""   // row or blip under the mouse
+    property string hoverName: ""   // row under the mouse
     property string pwFor: ""       // network whose password field is open
     property string connectingName: ""
     property string failName: ""
@@ -250,39 +267,129 @@ Item {
     Timer { id: failClear; interval: 4000; onTriggered: root.failName = "" }
     Timer { id: connectTimeout; interval: 30000; onTriggered: root.connectingName = "" }
 
-    // ── Link details: IP + frequency of the Wi-Fi interface ──────────────────
+    // ── Link details: IP, rates and frequency of the Wi-Fi interface ─────────
     property string ip: ""
     property string band: ""
+    property int channel: 0
+    property string rxRate: ""
+    property string txRate: ""
     function fetchLink() {
         if (visible && wifiDevice && wifiDevice.name && !linkProc.running) linkProc.running = true;
+    }
+    function rate(v) {
+        let n = parseFloat(v);
+        return isNaN(n) ? "" : Math.round(n) + " Mbit/s";
     }
     Process {
         id: linkProc
         command: ["sh", "-c", "ip -4 -o addr show dev \"$1\" | awk '{print $4}' | cut -d/ -f1 | head -n1; "
-                            + "iw dev \"$1\" link 2>/dev/null | awk '/freq:/{print $2}'", "sh", root.wifiDevice ? root.wifiDevice.name : ""]
+                            + "iw dev \"$1\" link 2>/dev/null | awk '/freq:/{f=$2} /rx bitrate:/{r=$3} /tx bitrate:/{t=$3} END{print f; print r; print t}'",
+                  "sh", root.wifiDevice ? root.wifiDevice.name : ""]
         stdout: StdioCollector {
             onStreamFinished: {
                 let l = this.text.split("\n");
                 root.ip = (l[0] || "").trim();
                 let f = parseFloat(l[1] || "");
                 root.band = isNaN(f) ? "" : (f < 3000 ? "2.4 GHz" : (f < 5925 ? "5 GHz" : "6 GHz"));
+                root.channel = isNaN(f) ? 0
+                    : f === 2484 ? 14
+                    : f < 3000 ? Math.round((f - 2407) / 5)
+                    : f < 5925 ? Math.round((f - 5000) / 5)
+                    : Math.round((f - 5950) / 5);
+                root.rxRate = root.rate(l[2] || "");
+                root.txRate = root.rate(l[3] || "");
             }
         }
     }
-    Timer { interval: 8000; repeat: true; running: root.visible && root.current !== null; onTriggered: root.fetchLink() }
-    onCurrentChanged: { ip = ""; band = ""; fetchLink(); }
+    Timer { interval: 5000; repeat: true; running: root.visible && root.current !== null; onTriggered: root.fetchLink() }
+    onCurrentChanged: { ip = ""; band = ""; channel = 0; rxRate = ""; txRate = ""; fetchLink(); }
+
+    // ── Airplane mode: every radio soft-blocked (rfkill) ─────────────────────
+    property bool airplane: false
+    function fetchRfkill() { if (!rfkillProc.running) rfkillProc.running = true; }
+    Process {
+        id: rfkillProc
+        command: ["sh", "-c", "LC_ALL=C rfkill -n -o SOFT"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let l = this.text.split("\n").filter(x => x.trim() !== "");
+                root.airplane = l.length > 0 && l.every(x => x.trim() === "blocked");
+            }
+        }
+    }
+    Process {
+        id: rfkillSet
+        onExited: root.fetchRfkill()
+    }
+    function toggleAirplane() {
+        rfkillSet.command = ["rfkill", airplane ? "unblock" : "block", "all"];
+        rfkillSet.running = true;
+        airplane = !airplane;
+    }
+
+    // ── Hotspot (nmcli creates/reuses the connection "Hotspot") ──────────────
+    property string hotspotSsid: ""
+    property string hotspotPsk: ""
+    property bool hotspotBusy: false
+    function fetchHotspot() {
+        if (hotspotOn && !hotspotInfo.running) hotspotInfo.running = true;
+    }
+    Process {
+        id: hotspotInfo
+        command: ["nmcli", "-s", "-g", "802-11-wireless.ssid,802-11-wireless-security.psk", "connection", "show", "Hotspot"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let l = this.text.split("\n");
+                root.hotspotSsid = (l[0] || "").trim();
+                root.hotspotPsk = (l[1] || "").trim();
+            }
+        }
+    }
+    Process {
+        id: hotspotSet
+        onExited: (code) => {
+            root.hotspotBusy = false;
+            if (code !== 0) Sounds.playSfx("network/error.wav");
+            root.fetchHotspot();
+        }
+    }
+    function toggleHotspot() {
+        if (!wifiDevice || hotspotBusy) return;
+        hotspotBusy = true;
+        hotspotSet.command = hotspotOn
+            ? ["nmcli", "connection", "down", "Hotspot"]
+            : ["nmcli", "device", "wifi", "hotspot", "ifname", wifiDevice.name, "con-name", "Hotspot"];
+        hotspotSet.running = true;
+    }
+
+    // ── Other network: hidden SSID ────────────────────────────────────────────
+    property bool otherOpen: false
+    property bool otherBusy: false
+    property string otherError: ""
+    Process {
+        id: otherProc
+        onExited: (code) => {
+            root.otherBusy = false;
+            if (code === 0) { root.otherOpen = false; Sounds.playSfx("network/connect.wav"); }
+            else { root.otherError = "Couldn't connect"; Sounds.playSfx("network/error.wav"); }
+        }
+    }
+    function connectHidden(ssid, psk) {
+        if (ssid === "" || otherBusy) return;
+        otherBusy = true;
+        otherError = "";
+        let cmd = ["nmcli", "device", "wifi", "connect", ssid];
+        if (psk !== "") cmd.push("password", psk);
+        cmd.push("hidden", "yes");
+        otherProc.command = cmd;
+        otherProc.running = true;
+    }
 
     function sigIcon(strength, secured) {
         if (strength > 0.75) return secured ? "󰤪" : "󰤨";
         if (strength > 0.5)  return secured ? "󰤧" : "󰤥";
         if (strength > 0.25) return secured ? "󰤤" : "󰤢";
         return secured ? "󰤡" : "󰤟";
-    }
-    // Stable pseudo-random direction per SSID
-    function angleFor(name) {
-        let h = 7;
-        for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 3600;
-        return h / 10;
     }
 
     // ── Panel ─────────────────────────────────────────────────────────────────
@@ -313,176 +420,166 @@ Item {
                 bottomRightRadius: parent.bottomRightRadius
             }
 
-            Item {
+            Column {
                 id: body
                 anchors { fill: parent; margins: root.pad }
+                spacing: root.gap
 
-                // ── Header ────────────────────────────────────────────────────
-                Item {
-                    id: header
-                    width: parent.width; height: root.headerH
-                    Column {
-                        anchors.verticalCenter: parent.verticalCenter
-                        Text { text: "Wi-Fi"; color: ThemeBackend.text; font.pixelSize: root.s(15); font.weight: Font.Bold }
-                        Text {
-                            text: !root.wifiDevice ? "No Wi-Fi adapter"
-                                : !root.wifiOn ? "Off"
-                                : root.connectingName !== "" ? "Connecting to " + root.connectingName + "…"
-                                : root.current ? (Networking.connectivity === NetworkConnectivity.Portal ? "Sign-in required"
-                                               : Networking.connectivity === NetworkConnectivity.Limited ? "Limited connectivity"
-                                               : "Connected")
-                                : netModel.count + (netModel.count === 1 ? " network nearby" : " networks nearby")
-                            color: root.current && root.wifiOn ? Qt.alpha(root.accent, 0.85) : root.dim
-                            font.pixelSize: root.s(10)
-                        }
+                // ── Tiles ─────────────────────────────────────────────────────
+                Row {
+                    id: tiles
+                    width: parent.width
+                    spacing: root.s(8)
+                    readonly property real tileW: (width - spacing * 2) / 3
+                    Tile {
+                        width: tiles.tileW
+                        icon: root.wifiOn ? "󰖩" : "󰖪"; label: "Wi-Fi"
+                        active: root.wifiOn
+                        enabled: !!root.wifiDevice
+                        onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
                     }
-                    Row {
-                        anchors { right: parent.right; verticalCenter: parent.verticalCenter }
-                        spacing: root.s(10)
-                        // Wired link, if any
-                        Rectangle {
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: root.wiredUp
-                            height: root.s(24); radius: height / 2
-                            width: ethRow.implicitWidth + root.s(18)
-                            color: root.card
-                            border.color: root.faint
-                            Row {
-                                id: ethRow; anchors.centerIn: parent; spacing: root.s(6)
-                                Text { anchors.verticalCenter: parent.verticalCenter; text: "󰈀"; font.family: ThemeBackend.iconFont; font.pixelSize: root.s(12); color: ThemeBackend.green }
-                                Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: root.wiredDevice && root.wiredDevice.linkSpeed ? root.wiredDevice.linkSpeed + " Mb/s" : "Ethernet"
-                                    font.pixelSize: root.s(10); color: ThemeBackend.text
-                                }
-                            }
-                        }
-                        Switch {
-                            anchors.verticalCenter: parent.verticalCenter
-                            checked: root.wifiOn
-                            enabled: !!root.wifiDevice
-                            onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
-                        }
+                    Tile {
+                        width: tiles.tileW
+                        icon: "󰀂"; label: "Hotspot"
+                        active: root.hotspotOn
+                        busy: root.hotspotBusy
+                        enabled: !!root.wifiDevice && root.wifiOn
+                        onClicked: root.toggleHotspot()
+                    }
+                    Tile {
+                        width: tiles.tileW
+                        icon: "󰀝"; label: "Airplane mode"
+                        active: root.airplane
+                        onClicked: root.toggleAirplane()
                     }
                 }
 
-                // ── Hero: radar + connected network ───────────────────────────
-                Item {
+                // ── Hero: connected network / state ───────────────────────────
+                Rectangle {
                     id: hero
-                    y: header.height + root.gap
                     width: parent.width; height: root.heroH
-
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: Math.min(ThemeBackend.borderRadius, root.s(20))
-                        color: root.card
-                        border.color: root.faint
-                    }
-
-                    Radar {
-                        id: radar
-                        anchors { left: parent.left; top: parent.top; bottom: parent.bottom; margins: root.s(8) }
-                        width: height
-                    }
+                    radius: root.cardRadius
+                    readonly property bool linked: root.wifiOn && (root.current !== null || root.hotspotOn)
+                    color: linked ? root.heroFill : root.card
+                    border.color: linked ? Qt.alpha(root.accent, 0.25) : root.faint
+                    Behavior on color { ColorAnimation { duration: Motion.normal } }
 
                     Column {
-                        id: info
                         anchors {
-                            left: radar.right; leftMargin: root.s(14)
-                            right: parent.right; rightMargin: root.s(14)
-                            verticalCenter: parent.verticalCenter
+                            left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter
+                            leftMargin: root.s(18); rightMargin: root.s(14)
                         }
-                        spacing: root.s(8)
+                        spacing: root.s(6)
 
-                        Label { text: !root.wifiOn ? "WI-FI OFF" : root.current ? "CONNECTED" : "NOT CONNECTED" }
+                        // Name + status pill
+                        Item {
+                            width: parent.width; height: root.s(26)
+                            Text {
+                                anchors { left: parent.left; right: pill.left; rightMargin: root.s(10); verticalCenter: parent.verticalCenter }
+                                text: root.noBackend ? "Network unavailable"
+                                    : !root.wifiDevice ? "No Wi-Fi adapter"
+                                    : !root.wifiOn ? (root.airplane ? "Airplane mode" : "Wi-Fi is off")
+                                    : root.hotspotOn ? (root.hotspotSsid || "Hotspot")
+                                    : root.current ? root.current.name
+                                    : root.connectingName !== "" ? root.connectingName
+                                    : "Not connected"
+                                elide: Text.ElideRight
+                                font.pixelSize: root.s(18); font.weight: Font.Bold
+                                color: hero.linked ? ThemeBackend.text : Qt.alpha(ThemeBackend.text, 0.8)
+                            }
+                            Pill {
+                                id: pill
+                                anchors { right: parent.right; verticalCenter: parent.verticalCenter }
+                                visible: hero.linked
+                                readonly property bool portal: !root.hotspotOn && Networking.connectivity === NetworkConnectivity.Portal
+                                text: hovered ? (portal ? "Sign in" : root.hotspotOn ? "Stop" : "Disconnect")
+                                    : root.hotspotOn ? "Hotspot"
+                                    : portal ? "Sign-in required"
+                                    : Networking.connectivity === NetworkConnectivity.Limited ? "Limited"
+                                    : "Connected"
+                                tint: hovered && !portal ? ThemeBackend.red : portal ? ThemeBackend.yellow : root.accent
+                                onClicked: {
+                                    if (portal) Quickshell.execDetached(["xdg-open", "http://nmcheck.gnome.org/check_network_status.txt"]);
+                                    else if (root.hotspotOn) root.toggleHotspot();
+                                    else { let n = root.current ? root.netRefs[root.current.name] : null; if (n) n.disconnect(); }
+                                }
+                            }
+                        }
+
+                        // Rates · band · channel
                         Text {
                             width: parent.width
-                            text: !root.wifiOn ? "Radio is off"
-                                : root.current ? root.current.name
-                                : root.connectingName !== "" ? root.connectingName
-                                : "Pick a network"
+                            visible: text !== ""
                             elide: Text.ElideRight
-                            font.pixelSize: root.s(17); font.weight: Font.Bold
-                            color: root.current && root.wifiOn ? ThemeBackend.text : root.dim
-                            Behavior on color { ColorAnimation { duration: Motion.normal } }
-                        }
-
-                        Flow {
-                            width: parent.width; spacing: root.s(6)
-                            visible: root.wifiOn && root.current !== null
-                            Chip { icon: root.current ? root.sigIcon(root.current.strength, false) : ""; label: root.current ? Math.round(root.current.strength * 100) + "%" : "" }
-                            Chip { visible: root.band !== ""; icon: "󰖩"; label: root.band }
-                            Chip { visible: !!root.current && root.current.secLabel !== ""; icon: root.current && root.current.secured ? "󰌾" : "󰿆"; label: root.current ? root.current.secLabel : "" }
-                        }
-
-                        Row {
-                            spacing: root.s(6)
-                            visible: root.wifiOn && root.current !== null
-                            Chip {
-                                id: ipChip
-                                visible: root.ip !== ""
-                                icon: copied ? "󰄬" : "󰆏"; label: root.ip; mono: true; clickable: true
-                                property bool copied: false
-                                Timer { id: copiedT; interval: 1200; onTriggered: ipChip.copied = false }
-                                onClicked: { Quickshell.execDetached(["wl-copy", root.ip]); copied = true; copiedT.restart(); }
-                            }
-                            Chip {
-                                visible: Networking.connectivity === NetworkConnectivity.Portal
-                                icon: "󰖟"; label: "Sign in"; clickable: true; tint: ThemeBackend.yellow
-                                onClicked: Quickshell.execDetached(["xdg-open", "http://nmcheck.gnome.org/check_network_status.txt"])
-                            }
-                            Chip {
-                                icon: "󰖪"; label: "Disconnect"; clickable: true; tint: ThemeBackend.red
-                                onClicked: { let n = root.current ? root.netRefs[root.current.name] : null; if (n) n.disconnect(); }
+                            font.pixelSize: root.s(12)
+                            color: hero.linked ? Qt.alpha(ThemeBackend.text, 0.85) : root.dim
+                            text: {
+                                if (root.noBackend) return "NetworkManager was not reachable when the shell started.";
+                                if (!root.wifiDevice) return root.wiredUp ? "Ethernet connected" : "";
+                                if (!root.wifiOn) return "Turn it on with the Wi-Fi tile.";
+                                if (root.hotspotOn) return root.hotspotPsk !== "" ? "Password  " + root.hotspotPsk : "Sharing this connection";
+                                if (!root.current) return root.connectingName !== "" ? "Connecting…"
+                                    : root.wiredUp ? "Ethernet connected" : "Pick a network below.";
+                                let a = [];
+                                if (root.rxRate !== "") a.push("↓ " + root.rxRate);
+                                if (root.txRate !== "") a.push("↑ " + root.txRate);
+                                let b = [root.band, root.channel > 0 ? "Channel " + root.channel : ""].filter(x => x !== "").join(" · ");
+                                return a.join("   ") + (a.length && b ? "   " : "") + b;
                             }
                         }
 
+                        // IP (click copies) / restart hint
                         Text {
-                            width: parent.width
-                            visible: !root.wifiOn || root.current === null
-                            wrapMode: Text.WordWrap
-                            text: !root.wifiOn ? "Turn Wi-Fi on with the switch above."
-                                : netModel.count > 0 ? "Stronger networks sit closer to the centre."
-                                : "Scanning…"
-                            font.pixelSize: root.s(11); color: root.dim
+                            id: ipText
+                            visible: text !== ""
+                            property bool copied: false
+                            text: root.noBackend ? "Restart the shell: systemctl --user restart serpantinum"
+                                : hero.linked && !root.hotspotOn && root.ip !== "" ? (copied ? "Copied" : root.ip)
+                                : ""
+                            font.pixelSize: root.s(11)
+                            font.family: root.noBackend ? Qt.application.font.family : "JetBrains Mono"
+                            color: ipH.hovered && !root.noBackend ? ThemeBackend.text : root.dim
+                            Timer { id: copiedT; interval: 1200; onTriggered: ipText.copied = false }
+                            HoverHandler { id: ipH; cursorShape: root.noBackend ? Qt.ArrowCursor : Qt.PointingHandCursor }
+                            TapHandler {
+                                enabled: !root.noBackend
+                                onTapped: { Quickshell.execDetached(["wl-copy", root.ip]); ipText.copied = true; copiedT.restart(); }
+                            }
+                        }
+                    }
+
+                    // Pulse while connecting
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: parent.radius
+                        color: "transparent"; border.color: root.accent; border.width: root.s(2)
+                        visible: root.connectingName !== ""
+                        SequentialAnimation on opacity {
+                            running: root.connectingName !== "" && root.visible; loops: Animation.Infinite
+                            NumberAnimation { from: 0.15; to: 0.8; duration: 700; easing.type: Easing.InOutSine }
+                            NumberAnimation { from: 0.8; to: 0.15; duration: 700; easing.type: Easing.InOutSine }
                         }
                     }
                 }
 
                 // ── Network list ──────────────────────────────────────────────
-                Item {
-                    id: listArea
-                    y: hero.y + hero.height + root.gap
-                    width: parent.width
-                    height: root.s(20) + root.listH
+                Rectangle {
+                    id: listCard
+                    width: parent.width; height: root.listH
                     visible: root.showList
-                    opacity: root.showList ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: Motion.normal } }
-
-                    Label { text: "NEARBY"; anchors.left: parent.left; anchors.leftMargin: root.s(4) }
-                    Label {
-                        anchors.right: parent.right; anchors.rightMargin: root.s(4)
-                        text: "SCANNING"
-                        visible: !!root.wifiDevice && root.wifiDevice.scannerEnabled
-                        SequentialAnimation on opacity {
-                            running: root.visible && root.wifiOn && Motion.factor > 0; loops: Animation.Infinite
-                            NumberAnimation { to: 0.25; duration: 900; easing.type: Easing.InOutSine }
-                            NumberAnimation { to: 1; duration: 900; easing.type: Easing.InOutSine }
-                        }
-                    }
+                    radius: root.cardRadius
+                    color: root.card
+                    border.color: root.faint
 
                     Text {
-                        y: root.s(20)
-                        width: parent.width; height: root.s(40)
+                        anchors.centerIn: parent
                         visible: netModel.count === 0
-                        horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter
-                        text: "Looking for networks…"; font.pixelSize: root.s(11); color: root.dim
+                        text: "Looking for networks…"; font.pixelSize: root.s(12); color: root.dim
                     }
 
                     Flickable {
                         id: flick
-                        y: root.s(20)
-                        width: parent.width; height: root.listH
+                        anchors { fill: parent; margins: root.s(6) }
                         contentHeight: rows.height
                         clip: true
                         boundsBehavior: Flickable.StopAtBounds
@@ -499,206 +596,188 @@ Item {
                         }
                     }
                 }
+
+                // ── Other network (hidden SSID) ───────────────────────────────
+                Rectangle {
+                    id: other
+                    width: parent.width; height: root.otherH
+                    visible: root.otherOpen
+                    radius: root.cardRadius
+                    color: root.card
+                    border.color: root.faint
+
+                    onVisibleChanged: if (visible) { ssidIn.text = ""; otherPw.text = ""; root.otherError = ""; ssidIn.forceActiveFocus(); }
+
+                    Column {
+                        anchors { fill: parent; margins: root.s(10) }
+                        spacing: root.s(8)
+                        Field {
+                            width: parent.width
+                            TextInput {
+                                id: ssidIn
+                                anchors { fill: parent; leftMargin: root.s(14); rightMargin: root.s(14) }
+                                verticalAlignment: TextInput.AlignVCenter
+                                color: ThemeBackend.text; selectionColor: Qt.alpha(root.accent, 0.4)
+                                font.pixelSize: root.s(12); clip: true
+                                KeyNavigation.tab: otherPw
+                                Keys.onReturnPressed: otherPw.forceActiveFocus()
+                                Keys.onEscapePressed: (event) => { root.otherOpen = false; root.forceActiveFocus(); event.accepted = true; }
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    visible: ssidIn.text === ""
+                                    text: root.otherError !== "" ? root.otherError : "Network name (SSID)"
+                                    font.pixelSize: root.s(11); color: root.otherError !== "" ? ThemeBackend.red : root.dim
+                                }
+                            }
+                        }
+                        Item {
+                            width: parent.width; height: root.s(32)
+                            Field {
+                                anchors { left: parent.left; right: otherGo.left; rightMargin: root.s(8) }
+                                TextInput {
+                                    id: otherPw
+                                    anchors { fill: parent; leftMargin: root.s(14); rightMargin: root.s(14) }
+                                    verticalAlignment: TextInput.AlignVCenter
+                                    echoMode: TextInput.Password; passwordCharacter: "•"
+                                    color: ThemeBackend.text; selectionColor: Qt.alpha(root.accent, 0.4)
+                                    font.pixelSize: root.s(12); clip: true
+                                    Keys.onReturnPressed: root.connectHidden(ssidIn.text, otherPw.text)
+                                    Keys.onEnterPressed: root.connectHidden(ssidIn.text, otherPw.text)
+                                    Keys.onEscapePressed: (event) => { root.otherOpen = false; root.forceActiveFocus(); event.accepted = true; }
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        visible: otherPw.text === ""
+                                        text: "Password (empty for open networks)"
+                                        font.pixelSize: root.s(11); color: root.dim
+                                    }
+                                }
+                            }
+                            GoButton {
+                                id: otherGo
+                                anchors.right: parent.right
+                                ready: ssidIn.text !== "" && !root.otherBusy
+                                onClicked: root.connectHidden(ssidIn.text, otherPw.text)
+                            }
+                        }
+                    }
+                }
+
+                // ── Buttons ───────────────────────────────────────────────────
+                Row {
+                    id: buttons
+                    width: parent.width
+                    spacing: root.s(8)
+                    Button {
+                        width: (buttons.width - buttons.spacing) / 2
+                        label: root.otherOpen ? "Cancel" : "Other network…"
+                        outlined: true
+                        enabled: root.wifiOn && !root.hotspotOn
+                        onClicked: root.otherOpen = !root.otherOpen
+                    }
+                    Button {
+                        width: (buttons.width - buttons.spacing) / 2
+                        label: "Settings"
+                        onClicked: {
+                            Quickshell.execDetached(["kitty", "--class", "nmtui", "-e", "nmtui"]);
+                            if (typeof masterWindow !== "undefined" && masterWindow.switchWidget) masterWindow.switchWidget("hidden", "");
+                        }
+                    }
+                }
             }
         }
     }
 
     // ── Components ────────────────────────────────────────────────────────────
-    component Label: Text {
-        font.family: ThemeBackend.fontFamily
-        font.pixelSize: root.s(9); font.weight: Font.Bold; font.letterSpacing: 1.2
-        color: Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.3)
-    }
-
-    component Chip: Rectangle {
-        id: chip
+    component Tile: Rectangle {
+        id: tile
         property string icon
         property string label
-        property bool mono: false
-        property bool clickable: false
-        property color tint: root.accent
+        property bool active: false
+        property bool busy: false
         signal clicked()
-        height: root.s(24); radius: height / 2
-        width: chipRow.implicitWidth + root.s(16)
-        color: clickable && chipH.hovered ? Qt.alpha(tint, 0.18) : root.card
-        border.color: clickable && chipH.hovered ? Qt.alpha(tint, 0.4) : root.faint
-        Behavior on color { ColorAnimation { duration: Motion.hover } }
-        Row {
-            id: chipRow; anchors.centerIn: parent; spacing: root.s(5)
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: chip.icon; font.family: ThemeBackend.iconFont; font.pixelSize: root.s(11)
-                color: chip.clickable && chipH.hovered ? chip.tint : root.accent
-            }
-            Text {
-                anchors.verticalCenter: parent.verticalCenter
-                text: chip.label; font.pixelSize: root.s(10)
-                font.family: chip.mono ? "JetBrains Mono" : Qt.application.font.family
-                color: ThemeBackend.text
-            }
+        height: root.tileH
+        radius: root.cardRadius
+        color: active ? (tileH.hovered ? Qt.lighter(root.accent, 1.08) : root.accent)
+                      : (tileH.hovered && enabled ? root.cardHover : root.card)
+        border.color: active ? "transparent" : root.faint
+        opacity: enabled ? (busy ? 0.7 : 1) : 0.45
+        Behavior on color { ColorAnimation { duration: Motion.fast } }
+        Text {
+            anchors { left: parent.left; top: parent.top; leftMargin: root.s(12); topMargin: root.s(10) }
+            text: tile.icon; font.family: ThemeBackend.iconFont; font.pixelSize: root.s(18)
+            color: tile.active ? root.accentInk : ThemeBackend.text
         }
-        HoverHandler { id: chipH; cursorShape: chip.clickable ? Qt.PointingHandCursor : Qt.ArrowCursor }
-        MouseArea { anchors.fill: parent; enabled: chip.clickable; onClicked: chip.clicked() }
+        Text {
+            anchors { left: parent.left; right: parent.right; bottom: parent.bottom; leftMargin: root.s(12); rightMargin: root.s(8); bottomMargin: root.s(10) }
+            text: tile.label; elide: Text.ElideRight
+            font.pixelSize: root.s(12); font.weight: Font.DemiBold
+            color: tile.active ? root.accentInk : ThemeBackend.text
+        }
+        HoverHandler { id: tileH; cursorShape: tile.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor }
+        MouseArea { anchors.fill: parent; enabled: tile.enabled && !tile.busy; onClicked: tile.clicked() }
     }
 
-    // Radar: rings, a sweep and one blip per nearby network
-    component Radar: Item {
-        id: rd
-        readonly property real cx: width / 2
-        readonly property real cy: height / 2
-        readonly property real radius: width / 2 - root.s(2)
-        readonly property bool sweeping: root.visible && root.wifiOn && Motion.factor > 0
-        property real sweep: 0
-        NumberAnimation on sweep {
-            running: rd.sweeping
-            from: 0; to: 360; duration: 4200; loops: Animation.Infinite
-        }
-
-        Canvas {
-            id: rings
-            anchors.fill: parent
-            property color c: root.accent
-            onCChanged: requestPaint()
-            onWidthChanged: requestPaint()
-            onPaint: {
-                let ctx = getContext("2d");
-                ctx.reset();
-                ctx.strokeStyle = String(c);
-                ctx.lineWidth = 1;
-                ctx.globalAlpha = 0.16;
-                for (let i = 1; i <= 3; i++) {
-                    ctx.beginPath();
-                    ctx.arc(rd.cx, rd.cy, rd.radius * i / 3, 0, 2 * Math.PI);
-                    ctx.stroke();
-                }
-                ctx.globalAlpha = 0.08;
-                ctx.beginPath();
-                ctx.moveTo(rd.cx - rd.radius, rd.cy); ctx.lineTo(rd.cx + rd.radius, rd.cy);
-                ctx.moveTo(rd.cx, rd.cy - rd.radius); ctx.lineTo(rd.cx, rd.cy + rd.radius);
-                ctx.stroke();
-            }
-        }
-
-        // Sweep: fading wedge behind a bright leading edge, painted once and rotated
-        Canvas {
-            anchors.fill: parent
-            visible: rd.sweeping
-            rotation: rd.sweep
-            property color c: root.accent
-            onCChanged: requestPaint()
-            onWidthChanged: requestPaint()
-            onPaint: {
-                let ctx = getContext("2d");
-                ctx.reset();
-                ctx.fillStyle = String(c);
-                ctx.strokeStyle = String(c);
-                let steps = 36, span = 75 * Math.PI / 180;
-                for (let i = 0; i < steps; i++) {
-                    ctx.globalAlpha = 0.20 * Math.pow(1 - i / steps, 1.6);
-                    ctx.beginPath();
-                    ctx.moveTo(rd.cx, rd.cy);
-                    ctx.arc(rd.cx, rd.cy, rd.radius, -span * (i + 1) / steps, -span * i / steps + 0.004);
-                    ctx.closePath();
-                    ctx.fill();
-                }
-                ctx.globalAlpha = 0.55;
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.moveTo(rd.cx, rd.cy); ctx.lineTo(rd.cx + rd.radius, rd.cy);
-                ctx.stroke();
-            }
-        }
-
-        Repeater {
-            model: netModel
-            delegate: Item {
-                id: blip
-                required property string name
-                required property real strength
-                required property bool known
-                required property bool busy
-                readonly property real ang: root.angleFor(name)
-                readonly property real dist: rd.radius * (0.32 + 0.6 * (1 - strength))
-                readonly property bool hot: root.hoverName === name
-                // 1 right after the sweep passed, fading over the next 120°
-                readonly property real glow: {
-                    if (!rd.sweeping) return 1;
-                    let d = ((rd.sweep - ang) % 360 + 360) % 360;
-                    return d < 120 ? 1 - d / 120 : 0;
-                }
-                x: rd.cx + dist * Math.cos(ang * Math.PI / 180)
-                y: rd.cy + dist * Math.sin(ang * Math.PI / 180)
-                z: hot ? 2 : 1
-                Behavior on x { NumberAnimation { duration: Motion.slow; easing.type: Motion.resizeEasing } }
-                Behavior on y { NumberAnimation { duration: Motion.slow; easing.type: Motion.resizeEasing } }
-
-                // Ping ring as the sweep passes
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: root.s(7); height: width; radius: width / 2
-                    color: "transparent"
-                    border.color: blip.known ? root.accent : ThemeBackend.text
-                    border.width: 1
-                    scale: 1 + 1.8 * (1 - blip.glow)
-                    opacity: rd.sweeping ? 0.5 * blip.glow * blip.glow : 0
-                }
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: blip.hot ? root.s(11) : root.s(7); height: width; radius: width / 2
-                    color: blip.known ? root.accent : ThemeBackend.text
-                    opacity: blip.hot || blip.busy ? 1 : 0.45 + 0.55 * blip.glow
-                    Behavior on width { NumberAnimation { duration: Motion.hover; easing.type: Motion.popEasing } }
-                }
-                // Name tag while hovered (row or blip)
-                Rectangle {
-                    visible: opacity > 0
-                    opacity: blip.hot ? 1 : 0
-                    Behavior on opacity { NumberAnimation { duration: Motion.hover } }
-                    x: blip.x > rd.width * 0.6 ? -width - root.s(8) : root.s(8)
-                    y: -height / 2
-                    width: tag.implicitWidth + root.s(12); height: root.s(18); radius: height / 2
-                    color: ThemeBackend.surface0
-                    Text { id: tag; anchors.centerIn: parent; text: blip.name; font.pixelSize: root.s(9); color: ThemeBackend.text }
-                }
-                Item {
-                    anchors.centerIn: parent
-                    width: root.s(16); height: width
-                    HoverHandler {
-                        cursorShape: Qt.PointingHandCursor
-                        onHoveredChanged: {
-                            if (hovered) root.hoverName = blip.name;
-                            else if (root.hoverName === blip.name) root.hoverName = "";
-                        }
-                    }
-                    TapHandler { onTapped: root.activate(blip.name) }
-                }
-            }
-        }
-
-        // Centre: this device / the connected network
-        Rectangle {
+    component Pill: Rectangle {
+        id: pl
+        property string text
+        property color tint: root.accent
+        readonly property bool hovered: plH.hovered
+        signal clicked()
+        height: root.s(24); radius: height / 2
+        width: plText.implicitWidth + root.s(20)
+        color: Qt.lighter(tint, 1.15)
+        Behavior on color { ColorAnimation { duration: Motion.hover } }
+        Behavior on width { NumberAnimation { duration: Motion.hover } }
+        Text {
+            id: plText
             anchors.centerIn: parent
-            width: root.s(40); height: width; radius: width / 2
-            color: root.wifiOn && root.current ? root.accent : ThemeBackend.surface0
-            border.color: root.faint
-            Behavior on color { ColorAnimation { duration: Motion.normal } }
-            Text {
-                anchors.centerIn: parent
-                text: !root.wifiOn ? "󰤮" : root.current ? root.sigIcon(root.current.strength, false) : "󰤯"
-                font.family: ThemeBackend.iconFont; font.pixelSize: root.s(18)
-                color: root.wifiOn && root.current ? ThemeBackend.base : root.dim
-            }
-            // Pulse while connecting
-            Rectangle {
-                anchors.centerIn: parent
-                width: parent.width; height: width; radius: width / 2
-                color: "transparent"; border.color: root.accent; border.width: root.s(2)
-                visible: root.connectingName !== ""
-                property real t: 0
-                scale: 1 + 0.9 * t; opacity: 1 - t
-                NumberAnimation on t { running: root.connectingName !== "" && root.visible; from: 0; to: 1; duration: 1100; loops: Animation.Infinite; easing.type: Easing.OutCubic }
-            }
+            text: pl.text; font.pixelSize: root.s(11); font.weight: Font.DemiBold
+            color: root.accentInk
         }
+        HoverHandler { id: plH; cursorShape: Qt.PointingHandCursor }
+        MouseArea { anchors.fill: parent; onClicked: pl.clicked() }
+    }
+
+    component Button: Rectangle {
+        id: btn
+        property string label
+        property bool outlined: false
+        signal clicked()
+        height: root.btnH; radius: height / 2
+        color: outlined ? (btnH.hovered && enabled ? root.faint : "transparent")
+                        : (btnH.hovered ? root.cardHover : root.card)
+        border.color: outlined ? Qt.alpha(ThemeBackend.text, 0.35) : root.faint
+        opacity: enabled ? 1 : 0.45
+        Behavior on color { ColorAnimation { duration: Motion.hover } }
+        Text {
+            anchors.centerIn: parent
+            text: btn.label; font.pixelSize: root.s(12); font.weight: Font.DemiBold
+            color: ThemeBackend.text
+        }
+        HoverHandler { id: btnH; cursorShape: btn.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor }
+        MouseArea { anchors.fill: parent; enabled: btn.enabled; onClicked: btn.clicked() }
+    }
+
+    component Field: Rectangle {
+        height: root.s(32); radius: height / 2
+        color: Qt.alpha(ThemeBackend.crust, 0.6)
+        border.color: root.faint
+    }
+
+    component GoButton: Rectangle {
+        id: gb
+        property bool ready: false
+        signal clicked()
+        width: root.s(32); height: width; radius: width / 2
+        color: ready ? (gbH.hovered ? Qt.lighter(root.accent, 1.1) : root.accent) : root.card
+        Behavior on color { ColorAnimation { duration: Motion.hover } }
+        Text {
+            anchors.centerIn: parent
+            text: "󰁔"; font.family: ThemeBackend.iconFont; font.pixelSize: root.s(15)
+            color: gb.ready ? root.accentInk : root.dim
+        }
+        HoverHandler { id: gbH; cursorShape: gb.ready ? Qt.PointingHandCursor : Qt.ArrowCursor }
+        TapHandler { onTapped: if (gb.ready) gb.clicked() }
     }
 
     component NetRow: Item {
@@ -711,7 +790,7 @@ Item {
         required property bool known
         required property bool busy
         readonly property bool open: root.pwFor === name
-        readonly property bool hot: hov.hovered || root.hoverName === name
+        readonly property bool hot: hov.hovered
         readonly property bool failed: root.failName === name
         readonly property bool connecting: busy || root.connectingName === name
         height: root.rowH + (open ? root.pwH : 0)
@@ -719,10 +798,9 @@ Item {
         Behavior on height { NumberAnimation { duration: Motion.resize; easing.type: Motion.resizeEasing } }
 
         Rectangle {
-            anchors { fill: parent; topMargin: root.s(2); bottomMargin: root.s(2) }
+            anchors.fill: parent
             radius: Math.min(ThemeBackend.borderRadius, root.s(14))
-            color: row.open ? root.card : row.hot ? root.cardHover : "transparent"
-            border.color: row.open ? root.faint : "transparent"
+            color: row.open || row.hot ? root.cardHover : "transparent"
             Behavior on color { ColorAnimation { duration: Motion.hover } }
         }
 
@@ -740,35 +818,38 @@ Item {
             }
             TapHandler { onTapped: root.activate(row.name) }
 
-            Text {
+            Rectangle {
                 id: sig
-                anchors { left: parent.left; leftMargin: root.s(12); verticalCenter: parent.verticalCenter }
-                width: root.s(20)
-                text: root.sigIcon(row.strength, row.secured)
-                font.family: ThemeBackend.iconFont; font.pixelSize: root.s(16)
-                color: row.known ? root.accent : (row.hot ? ThemeBackend.text : root.dim)
-                Behavior on color { ColorAnimation { duration: Motion.hover } }
+                anchors { left: parent.left; leftMargin: root.s(8); verticalCenter: parent.verticalCenter }
+                width: root.s(36); height: width; radius: width / 2
+                color: row.known ? Qt.alpha(root.accent, 0.18) : Qt.alpha(ThemeBackend.surface1, 0.8)
+                Text {
+                    anchors.centerIn: parent
+                    text: root.sigIcon(row.strength, row.secured)
+                    font.family: ThemeBackend.iconFont; font.pixelSize: root.s(16)
+                    color: row.known ? root.accent : ThemeBackend.text
+                }
             }
             Column {
                 anchors {
-                    left: sig.right; leftMargin: root.s(10)
+                    left: sig.right; leftMargin: root.s(12)
                     right: tail.left; rightMargin: root.s(8)
                     verticalCenter: parent.verticalCenter
                 }
-                spacing: root.s(1)
+                spacing: root.s(2)
                 Text {
                     width: parent.width
                     text: row.name; elide: Text.ElideRight
-                    font.pixelSize: root.s(12); font.weight: row.known ? Font.Medium : Font.Normal
+                    font.pixelSize: root.s(13); font.weight: Font.DemiBold
                     color: ThemeBackend.text
                 }
                 Text {
                     width: parent.width
                     text: row.failed ? root.failText
                         : row.connecting ? "Connecting…"
-                        : [row.known ? "Saved" : "", row.secLabel].filter(s => s !== "").join("  ·  ")
+                        : [row.known ? "Saved" : "", row.secLabel].filter(s => s !== "").join(" · ")
                     elide: Text.ElideRight
-                    font.pixelSize: root.s(9)
+                    font.pixelSize: root.s(11)
                     color: row.failed ? ThemeBackend.red : row.connecting ? root.accent : root.dim
                 }
             }
@@ -814,7 +895,7 @@ Item {
                     visible: !row.connecting
                     text: row.open ? "󰅀" : "󰅂"
                     font.family: ThemeBackend.iconFont; font.pixelSize: root.s(14)
-                    color: row.hot ? ThemeBackend.text : Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.2)
+                    color: row.hot ? ThemeBackend.text : root.dim
                     Behavior on color { ColorAnimation { duration: Motion.hover } }
                 }
             }
@@ -867,47 +948,16 @@ Item {
                     TapHandler { onTapped: pw.reveal = !pw.reveal }
                 }
             }
-            Rectangle {
+            GoButton {
                 id: go
                 anchors { right: parent.right; rightMargin: root.s(12); verticalCenter: field.verticalCenter }
-                width: root.s(32); height: width; radius: width / 2
-                readonly property bool ready: pw.text.length >= 8
-                color: ready ? (goH.hovered ? Qt.lighter(root.accent, 1.1) : root.accent) : root.card
-                Behavior on color { ColorAnimation { duration: Motion.hover } }
-                Text {
-                    anchors.centerIn: parent
-                    text: "󰁔"; font.family: ThemeBackend.iconFont; font.pixelSize: root.s(15)
-                    color: go.ready ? ThemeBackend.base : root.dim
-                }
-                HoverHandler { id: goH; cursorShape: go.ready ? Qt.PointingHandCursor : Qt.ArrowCursor }
-                TapHandler { onTapped: if (pw.text.length > 0) root.connectTo(row.name, pw.text) }
+                ready: pw.text.length >= 8
+                onClicked: root.connectTo(row.name, pw.text)
             }
         }
 
         onOpenChanged: {
             if (open) { pw.text = ""; pw.reveal = false; pw.forceActiveFocus(); }
         }
-    }
-
-    component Switch: Rectangle {
-        id: sw
-        property bool checked: false
-        signal toggled()
-        width: root.s(44); height: root.s(24); radius: height / 2
-        color: checked ? (swHov.hovered ? Qt.lighter(root.accent, 1.1) : root.accent)
-                       : Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, swHov.hovered ? 0.15 : 0.1)
-        border.color: checked ? Qt.darker(root.accent, 1.2) : Qt.rgba(ThemeBackend.text.r, ThemeBackend.text.g, ThemeBackend.text.b, 0.2)
-        border.width: 1
-        opacity: !enabled ? 0.6 : 1
-        Behavior on color { ColorAnimation { duration: Motion.fast } }
-        Rectangle {
-            width: root.s(18); height: width; radius: width / 2
-            anchors.verticalCenter: parent.verticalCenter
-            x: sw.checked ? sw.width - width - root.s(3) : root.s(3)
-            color: "white"
-            Behavior on x { NumberAnimation { duration: Motion.fast; easing.type: Easing.OutBack } }
-        }
-        HoverHandler { id: swHov; cursorShape: Qt.PointingHandCursor }
-        MouseArea { anchors.fill: parent; enabled: sw.enabled; onClicked: sw.toggled() }
     }
 }
